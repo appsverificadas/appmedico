@@ -65,8 +65,8 @@
             <h3 style="margin-top:0; color:#0F4C81;">1. Configuración del Profesional</h3>
             <div class="form-row">
                 <div style="flex: 2;"><label>Nombre y Apellido</label><input type="text" id="med_nombre" value="BARBERA MIRET, FRANCISCO"></div>
-                <div><label>Especialidad</label><input type="text" id="med_esp" value="CLÍNICA MÉDICA"></div>
-                <div><label>Profesión</label><input type="text" id="med_prof" value="Médico"></div>
+                <div><label>Especialidad</label><input type="text" id="med_esp" value="ODONTOLOGÍA / CLÍNICA"></div>
+                <div><label>Profesión</label><input type="text" id="med_prof" value="Médico / Odontólogo"></div>
             </div>
             <div class="form-row">
                 <div><label>Matrícula</label><input type="text" id="med_mat" value="MN 158282"></div>
@@ -122,15 +122,43 @@
 
     <script>
         const dbMedicamentos = [
-            // --- SUBLINGUALES (URGENCIAS Y RESCATES) ---
+            // --- ANESTESIAS (ODONTOLOGÍA Y CIRUGÍA) ---
+            "articaína 4% + epinefrina 1:100.000 iny. x 50 cartuchos",
+            "lidocaína 2% + epinefrina 1:100.000 iny. x 50 cartuchos",
+            "mepivacaína 3% s/epinefrina iny. x 50 cartuchos",
+            "bupivacaína 0.5% c/epinefrina iny. x 1 f.a.",
+            "lidocaína 2% jalea tópica x 25g",
+            "lidocaína 10% spray tópico x 50ml",
+            
+            // --- ANALGÉSICOS FUERTES Y URGENCIAS (INYECTABLES Y SUBLINGUALES) ---
             "ketorolac, 10 mg comp. sublingual x 10",
             "ketorolac, 30 mg comp. sublingual x 10",
+            "ketorolac, 30 mg iny. x 3 amp.",
+            "ketorolac, 60 mg/2ml iny. x 3 amp.",
+            "tramadol, 50 mg iny. x 5 amp.",
+            "tramadol, 100 mg iny. x 3 amp.",
+            "morfina clorhidrato, 10 mg/ml iny. x 10 amp.",
+            "nalbufina, 10 mg/ml iny. x 3 amp.",
+            "diclofenac, 75 mg iny. x 5 amp.",
+            "diclofenac + pridinol, iny. x 3 amp.",
+            "clonixino lisina (Dorixina), 125 mg comp. x 20",
+            "clonixino lisina, 100 mg iny. x 6 amp.",
+            "piroxicam, 20 mg comp. sublingual x 10",
+
+            // --- CORTICOIDES DE DEPÓSITO Y RESCATES ---
+            "betametasona (acetato+fosfato) de depósito, 3 mg/ml iny. x 1 amp. (Cronocorteroid)",
+            "dexametasona, 8 mg/2ml iny. x 3 amp.",
+            "betametasona, 4 mg/ml iny. x 1 amp.",
+            "hidrocortisona, 100 mg iny. x 1 f.a.",
+            "hidrocortisona, 500 mg iny. x 1 f.a.",
+            "metilprednisolona, 500 mg iny. x 1 f.a.",
+
+            // --- SUBLINGUALES (PSIQUIATRÍA Y CARDIOLOGÍA) ---
             "clonazepam, 0.25 mg comp. sublingual x 30",
             "alprazolam, 0.5 mg comp. sublingual x 30",
             "lorazepam, 1 mg comp. sublingual x 30",
             "lorazepam, 2 mg comp. sublingual x 30",
             "isosorbide dinitrato, 5 mg comp. sublingual x 30",
-            "piroxicam, 20 mg comp. sublingual x 10",
             "zolpidem, 10 mg comp. sublingual x 30",
             "buprenorfina, 0.2 mg comp. sublingual x 10",
 
@@ -155,16 +183,7 @@
             "ketorolac, 0.5% gotas oftálmicas x 5 ml",
             "nafazolina, gotas oftálmicas x 10 ml",
             
-            // --- INYECTABLES (AMPOLLAS, JERINGAS PRELLENADAS, FRASCOS AMPOLLA) ---
-            "diclofenac, 75 mg iny. x 5 amp.",
-            "diclofenac + pridinol, iny. x 3 amp.",
-            "ketorolac, 30 mg iny. x 3 amp.",
-            "dexametasona, 8 mg/2ml iny. x 3 amp.",
-            "betametasona (acetato+fosfato), 3 mg/ml iny. x 1 amp. (Cronocorteroid)",
-            "betametasona, 4 mg/ml iny. x 1 amp.",
-            "hidrocortisona, 100 mg iny. x 1 f.a.",
-            "hidrocortisona, 500 mg iny. x 1 f.a.",
-            "metilprednisolona, 500 mg iny. x 1 f.a.",
+            // --- INYECTABLES GENERALES (CARDIOLOGÍA, GASTRO, INFECTO) ---
             "lorazepam, 4 mg/ml iny. x 1 amp.",
             "diazepam, 10 mg/2ml iny. x 5 amp.",
             "haloperidol, 5 mg/ml iny. x 5 amp.",
@@ -183,8 +202,6 @@
             "penicilina G benzatínica, 2.400.000 UI iny. x 1 f.a.",
             "gentamicina, 80 mg iny. x 1 amp.",
             "clindamicina, 600 mg iny. x 1 amp.",
-            "bupivacaína, 0.5% iny. x 1 f.a.",
-            "lidocaína, 2% s/epinefrina iny. x 1 f.a.",
             "complejo B (B1, B6, B12), iny. x 3 amp.",
             "hierro sacarato, 100 mg/5ml iny. x 5 amp.",
             "insulina glargina, 100 U/ml lapicera prellenada x 5",
@@ -294,6 +311,15 @@
         ];
 
         const dbDiagnosticos = [
+            // ODONTOLOGÍA Y ESTOMATOLOGÍA
+            "K01.1 - Dientes impactados",
+            "K04.0 - Pulpitis",
+            "K04.7 - Absceso periapical sin fístula",
+            "K05.2 - Periodontitis aguda",
+            "K08.8 - Otras afecciones especificadas de los dientes y del medio de sostén",
+            "K12.0 - Estomatitis aftosa recurrente",
+            "K05.0 - Gingivitis aguda",
+
             // PSIQUIATRÍA / SALUD MENTAL
             "F41.0 - Trastorno de pánico [ansiedad paroxística episódica]", "F41.1 - Trastorno de ansiedad generalizada", "F41.2 - Trastorno mixto ansioso-depresivo", "F41.9 - Trastorno de ansiedad, no especificado",
             "F32.0 - Episodio depresivo leve", "F32.1 - Episodio depresivo moderado", "F32.2 - Episodio depresivo grave sin síntomas psicóticos", "F32.9 - Episodio depresivo, no especificado",
@@ -369,6 +395,7 @@
             "1 comp por la noche antes de dormir.", 
             "Dejar disolver 1 comp debajo de la lengua.", "Dejar disolver debajo de la lengua en caso de dolor/crisis.",
             "Tomar con el desayuno.", "Tomar lejos de las comidas.", "Tomar 30 minutos antes del desayuno.",
+            "Uso odontológico exclusivo en consultorio.",
             "Aplicar 1 ampolla IM por única vez.", "Aplicar 1 ampolla IM cada 12 hs.", "Aplicar 1 ampolla IM por 3 días.",
             "Inyectar 1 f.a. endovenoso según protocolo.",
             "Aplicar 1 gota en cada ojo afectado cada 12 hs.", "Aplicar 1 gota en cada ojo afectado cada 8 hs.",
