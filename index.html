@@ -23,41 +23,30 @@
         
         #print-area { display: none; }
 
-        /* ESTILOS EXACTOS PARA EL PDF */
         @media print {
             @page { size: A4; margin: 0; } 
-            
             body { background: white; margin: 0; padding: 0; }
-            .ui-container { display: none; }
+            .ui-container { display: none !important; }
             #print-area { display: block; width: 100%; color: #000; }
-            
             .pdf-page { padding: 15mm; box-sizing: border-box; height: 297mm; position: relative; }
-            
             .text-center { text-align: center; }
             p { margin: 2px 0; font-size: 11pt; }
-            
             .pink-title { color: #FF007F; font-weight: bold; font-size: 12pt; text-align: center; margin-top: 5px; margin-bottom: 10px; }
             .main-header { font-weight: bold; font-size: 12pt; margin-bottom: 15px; }
-            
             .barcode-svg { height: 60px; margin-top: 5px; }
             .barcode-sub { font-size: 13pt; margin-bottom: 15px; letter-spacing: 1px; }
-            
             .patient-info { margin-top: 20px; margin-bottom: 20px; }
             .patient-info p { font-size: 10pt; }
-            
             .rp-title { font-weight: bold; font-size: 12pt; margin-bottom: 15px; }
             .rp-list { margin: 0; padding-left: 20px; }
             .rp-list li { margin-bottom: 15px; font-style: italic; }
             .rp-details { margin-left: 0; font-style: normal; }
             .rp-details p { font-size: 10.5pt; }
-            
             .signature-block { margin-top: 30px; }
             .signature-block p { font-size: 10pt; }
             .italic-bold { font-style: italic; font-weight: bold; font-size: 11pt; margin-bottom: 5px;}
-            
             .grey-text { color: #666; font-size: 9pt; text-align: center; }
             .separator { border-bottom: 1px solid #000; margin: 10px 0; }
-            
             .footer-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; }
             .mrx-logo-container { width: 85px; height: 85px; flex-shrink: 0; margin-left: 10px; display: flex; align-items: center; justify-content: center; }
             .mrx-logo-img { width: 100%; height: 100%; object-fit: contain; }
@@ -68,7 +57,7 @@
 </head>
 <body>
 
-    <div class="ui-container">
+    <div class="ui-container" id="interfaz-principal">
         <h1 style="color:#0F4C81; text-align:center; margin-top:0;">Sistema de Recetas MRx</h1>
         
         <div class="section-prof">
@@ -82,16 +71,6 @@
                 <div><label>Matrícula</label><input type="text" id="med_mat" value="MN 158282 (MINISTERIO DE SALUD CABA)"></div>
                 <div><label>REFEPS</label><input type="text" id="med_refeps" value="541033444821"></div>
                 <div><label>Dirección del Consultorio</label><input type="text" id="med_dir" value="No indicada"></div>
-            </div>
-            <!-- CARGADOR DE LOGO INTERNO -->
-            <div class="form-row" style="margin-top: 10px; background: white; padding: 10px; border-radius: 4px;">
-                <div style="flex: 1;">
-                    <label>Cargar Logo de la Receta (Se guarda automáticamente)</label>
-                    <input type="file" id="logo-input" accept="image/*" onchange="guardarLogo()" style="padding: 5px;">
-                </div>
-                <div style="flex: 1; display: flex; justify-content: flex-end;">
-                    <img id="preview-logo" style="max-height: 50px; display: none; border-radius: 50%;">
-                </div>
             </div>
         </div>
 
@@ -135,12 +114,15 @@
             </div>
         </div>
 
-        <button class="btn btn-generate" onclick="prepararImpresion()">Generar PDF Oficial MRx</button>
+        <button class="btn btn-generate" onclick="prepararImpresion()" id="btn-gen">Generar PDF Oficial MRx</button>
     </div>
 
     <div id="print-area"></div>
 
     <script>
+        // PEGA ACÁ TU LINK DEL PASO 1 (MANTENÉ LAS COMILLAS)
+        const URL_BASE_DE_DATOS = "https://script.google.com/macros/s/AKfycbz0sW9Sk4Xc7EgUbgFB5xeCmldrEiDlNLDz_bm3kerV5n1XmB7L_p8xrfFPvC3DT8GF/exec";
+
         const dbMedicamentos = [
             "escitalopram, 10 mg comp.rec.x 30", "escitalopram, 20 mg comp.rec.x 30",
             "clonazepam, 0.5 mg comp.x 30", "clonazepam, 1 mg comp.x 60", "clonazepam, 2 mg comp.x 30",
@@ -197,42 +179,38 @@
             "Tomar con las comidas."
         ];
 
-        // CARGA INICIAL
-        window.onload = function() {
-            const poblarDatalist = (id, array) => {
-                const list = document.getElementById(id);
-                array.forEach(item => {
-                    let opt = document.createElement('option');
-                    opt.value = item;
-                    list.appendChild(opt);
-                });
-            };
-            poblarDatalist("lista-meds", dbMedicamentos);
-            poblarDatalist("lista-diag", dbDiagnosticos);
-            poblarDatalist("lista-pos", dbPosologias);
+        let medicamentos = [];
 
-            // Cargar logo guardado previamente
-            const logoGuardado = localStorage.getItem('mrx_logo_base64');
-            if(logoGuardado) {
-                document.getElementById('preview-logo').src = logoGuardado;
-                document.getElementById('preview-logo').style.display = 'block';
+        window.onload = function() {
+            // DETECTAMOS SI ES EL FARMACÉUTICO ESCANEANDO EL QR
+            const urlParams = new URLSearchParams(window.location.search);
+            const idReceta = urlParams.get('id');
+
+            if(idReceta) {
+                document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:#0F4C81; margin-top:50px;'>Validando Receta Oficial... Aguarde.</h2>";
+                
+                fetch(URL_BASE_DE_DATOS + "?id=" + idReceta)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.error) {
+                        document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:red; margin-top:50px;'>❌ Error: Receta no encontrada o inválida.</h2>";
+                    } else {
+                        medicamentos = data.medicamentos; // Carga los medicamentos de la nube
+                        renderizarRecetaFinal(data);
+                        setTimeout(() => { window.print(); }, 1500); // Abre el PDF en el celular
+                    }
+                }).catch(err => alert("Error de conexión."));
+            } else {
+                // SI NO HAY ID, ES EL MÉDICO. CARGAMOS EL FORMULARIO.
+                const poblarDatalist = (id, array) => {
+                    const list = document.getElementById(id);
+                    array.forEach(item => { let opt = document.createElement('option'); opt.value = item; list.appendChild(opt); });
+                };
+                poblarDatalist("lista-meds", dbMedicamentos);
+                poblarDatalist("lista-diag", dbDiagnosticos);
+                poblarDatalist("lista-pos", dbPosologias);
             }
         };
-
-        // FUNCIÓN PARA GUARDAR EL LOGO EN EL NAVEGADOR
-        function guardarLogo() {
-            const file = document.getElementById('logo-input').files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                localStorage.setItem('mrx_logo_base64', reader.result);
-                document.getElementById('preview-logo').src = reader.result;
-                document.getElementById('preview-logo').style.display = 'block';
-            }
-            reader.readAsDataURL(file);
-        }
-
-        let medicamentos = [];
 
         function agregarMed() {
             const nombre = document.getElementById('rx_nombre').value;
@@ -263,8 +241,11 @@
 
         function prepararImpresion() {
             if(medicamentos.length === 0) return alert("Agregá al menos un medicamento a la lista.");
+            if(URL_BASE_DE_DATOS === "PEGA_TU_LINK_AQUI") return alert("¡No te olvides de pegar tu link de Apps Script en el código!");
 
-            const logoData = localStorage.getItem('mrx_logo_base64') || '';
+            const btn = document.getElementById('btn-gen');
+            btn.innerText = "Registrando en la nube oficial...";
+            btn.disabled = true;
 
             const data = {
                 paciente: document.getElementById('paciente').value || "No indicado",
@@ -278,7 +259,7 @@
                 fecha: new Date().toLocaleDateString('es-AR'),
                 hora: new Date().toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'}),
                 recetarioNro: Math.floor(Math.random() * 10000000000000).toString(), 
-                
+                medicamentos: medicamentos,
                 med_nombre: document.getElementById('med_nombre').value,
                 med_esp: document.getElementById('med_esp').value,
                 med_prof: document.getElementById('med_prof').value,
@@ -287,9 +268,26 @@
                 med_dir: document.getElementById('med_dir').value
             };
 
-            const htmlOriginal = generarPaginaHTML(data, logoData, false);
-            const htmlDuplicado = generarPaginaHTML(data, logoData, true);
+            // Guarda los datos en el Excel de forma invisible
+            fetch(URL_BASE_DE_DATOS, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            }).then(res => {
+                btn.innerText = "Generar PDF Oficial MRx";
+                btn.disabled = false;
+                renderizarRecetaFinal(data);
+                setTimeout(() => { window.print(); }, 800);
+            }).catch(err => {
+                alert("Error al guardar. Revisá tu conexión a internet.");
+                btn.innerText = "Generar PDF Oficial MRx";
+                btn.disabled = false;
+            });
+        }
 
+        function renderizarRecetaFinal(data) {
+            const htmlOriginal = generarPaginaHTML(data, false);
+            const htmlDuplicado = generarPaginaHTML(data, true);
             document.getElementById('print-area').innerHTML = htmlOriginal + htmlDuplicado;
 
             const opcionesBarcode = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2.5 };
@@ -298,16 +296,15 @@
             JsBarcode("#bar-recetario-dup", data.recetarioNro, opcionesBarcode);
             JsBarcode("#bar-afiliado-dup", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
 
-            const linkSimulado = "https://validar-receta.gob.ar/v/" + data.recetarioNro;
+            // Genera el Link del Código QR apuntando a sí misma en GitHub
+            const linkSimulado = window.location.href.split('?')[0] + "?id=" + data.recetarioNro;
             new QRCode(document.getElementById("qr-orig"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
             new QRCode(document.getElementById("qr-dup"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
-
-            setTimeout(() => { window.print(); }, 500);
         }
 
-        function generarPaginaHTML(data, logoData, esDuplicado) {
+        function generarPaginaHTML(data, esDuplicado) {
             const sufijo = esDuplicado ? 'dup' : 'orig';
-            const medsHTML = medicamentos.map(m => `
+            const medsHTML = data.medicamentos.map(m => `
                 <li>${m.nombre}
                     <div class="rp-details">
                         <p><strong>Cantidad:</strong> ${m.cant}</p>
@@ -316,20 +313,15 @@
                 </li>
             `).join('');
 
-            // Etiqueta de imagen que se alimenta de la memoria del navegador
-            const logoHTML = logoData ? `<img src="${logoData}" class="mrx-logo-img" alt="Logo MRx">` : `<p style="font-size:10px; color:red;">Falta cargar Logo</p>`;
-
             return `
                 <div class="pdf-page" style="${esDuplicado ? 'page-break-before: always;' : ''}">
                     ${esDuplicado ? '<div class="pink-title">Duplicado</div>' : ''}
                     
                     <div class="text-center">
                         <p class="main-header">Fecha Receta: ${data.fecha}</p>
-                        
                         <p style="font-weight: bold; margin-bottom: 5px;">Recetario:</p>
                         <svg id="bar-recetario-${sufijo}" class="barcode-svg"></svg>
                         <p class="barcode-sub">${data.recetarioNro}</p>
-                        
                         <p style="font-weight: bold; margin-bottom: 5px; margin-top: 10px;">Nro Afiliado:</p>
                         <svg id="bar-afiliado-${sufijo}" class="barcode-svg"></svg>
                         <p class="barcode-sub">${data.afiliado !== "-" ? data.afiliado : data.dni}</p>
@@ -372,9 +364,8 @@
                     <div class="separator"></div>
 
                     <div class="footer-flex">
-                        <!-- EL LOGO CARGA DESDE LA MEMORIA BASE64 -->
                         <div class="mrx-logo-container">
-                            ${logoHTML}
+                            <img src="icono.png" class="mrx-logo-img" alt="Logo MRx">
                         </div>
 
                         <div class="qr-box">
