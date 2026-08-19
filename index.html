@@ -120,9 +120,6 @@
     <div id="print-area"></div>
 
     <script>
-        // PEGA ACÁ TU LINK DE APPS SCRIPT (MANTENÉ LAS COMILLAS)
-        const URL_BASE_DE_DATOS = "https://script.google.com/macros/s/AKfycbz0sW9Sk4Xc7EgUbgFB5xeCmldrEiDlNLDz_bm3kerV5n1XmB7L_p8xrfFPvC3DT8GF/exec";
-
         const dbMedicamentos = [
             "escitalopram, 10 mg comp.rec.x 30", "escitalopram, 20 mg comp.rec.x 30",
             "clonazepam, 0.5 mg comp.x 30", "clonazepam, 1 mg comp.x 60", "clonazepam, 2 mg comp.x 30",
@@ -182,26 +179,26 @@
         let medicamentos = [];
 
         window.onload = function() {
-            // DETECTAMOS SI ES EL FARMACÉUTICO ESCANEANDO EL QR
+            // EL ESCÁNER DETECTA LOS DATOS OCULTOS EN EL LINK
             const urlParams = new URLSearchParams(window.location.search);
-            const idReceta = urlParams.get('id');
+            const dataParam = urlParams.get('d');
 
-            if(idReceta) {
-                document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:#0F4C81; margin-top:50px;'>Validando Receta Oficial... Aguarde.</h2>";
+            if(dataParam) {
+                document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:#0F4C81; margin-top:50px;'>Preparando descarga del PDF...</h2>";
                 
-                fetch(URL_BASE_DE_DATOS + "?id=" + idReceta)
-                .then(res => res.json())
-                .then(data => {
-                    if(data.error) {
-                        document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:red; margin-top:50px;'>❌ Error: Receta no encontrada o inválida.</h2>";
-                    } else {
-                        medicamentos = data.medicamentos;
-                        renderizarRecetaFinal(data);
-                        setTimeout(() => { window.print(); }, 1500);
-                    }
-                }).catch(err => alert("Error de conexión."));
+                try {
+                    // Desencripta la receta directamente del código QR
+                    const decodedStr = decodeURIComponent(escape(atob(dataParam)));
+                    const data = JSON.parse(decodedStr);
+                    renderizarRecetaFinal(data);
+                    
+                    // Dispara la descarga automática en el celular
+                    setTimeout(() => { window.print(); }, 1500);
+                } catch(e) {
+                    document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:red; margin-top:50px;'>❌ Error: Código QR inválido o corrupto.</h2>";
+                }
             } else {
-                // SI NO HAY ID, ES EL MÉDICO. CARGAMOS EL FORMULARIO.
+                // MODO PSÍQUIATRA (FORMULARIO)
                 const poblarDatalist = (id, array) => {
                     const list = document.getElementById(id);
                     array.forEach(item => { let opt = document.createElement('option'); opt.value = item; list.appendChild(opt); });
@@ -241,49 +238,31 @@
 
         function prepararImpresion() {
             if(medicamentos.length === 0) return alert("Agregá al menos un medicamento a la lista.");
-            if(URL_BASE_DE_DATOS === "PEGA_TU_LINK_AQUI") return alert("¡No te olvides de pegar tu link de Apps Script en el código!");
 
-            const btn = document.getElementById('btn-gen');
-            btn.innerText = "Registrando en la nube oficial...";
-            btn.disabled = true;
-
-            const data = {
-                paciente: document.getElementById('paciente').value || "No indicado",
+            // Crea un objeto ultra compacto para que entre perfecto en el QR
+            const compactData = {
+                pac: document.getElementById('paciente').value || "No indicado",
                 dni: document.getElementById('dni').value || "-",
-                cuil: document.getElementById('cuil').value || "-",
-                sexo: document.getElementById('sexo').value,
-                nacimiento: document.getElementById('nacimiento').value || "-",
+                cui: document.getElementById('cuil').value || "-",
+                sex: document.getElementById('sexo').value,
+                nac: document.getElementById('nacimiento').value || "-",
                 os: document.getElementById('os').value || "Paciente Particular",
-                afiliado: document.getElementById('afiliado').value || "-",
-                posologia: document.getElementById('posologia').value || "Según indicación.",
-                fecha: new Date().toLocaleDateString('es-AR'),
-                hora: new Date().toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'}),
-                recetarioNro: Math.floor(Math.random() * 10000000000000).toString(), 
-                medicamentos: medicamentos,
-                med_nombre: document.getElementById('med_nombre').value,
-                med_esp: document.getElementById('med_esp').value,
-                med_prof: document.getElementById('med_prof').value,
-                med_mat: document.getElementById('med_mat').value,
-                med_refeps: document.getElementById('med_refeps').value,
-                med_dir: document.getElementById('med_dir').value
+                afi: document.getElementById('afiliado').value || "-",
+                pos: document.getElementById('posologia').value || "Según indicación.",
+                fec: new Date().toLocaleDateString('es-AR'),
+                hor: new Date().toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'}),
+                id: Math.floor(Math.random() * 10000000000000).toString(), 
+                meds: medicamentos.map(m => ({ n: m.nombre, c: m.cant, d: m.diag })),
+                doc_n: document.getElementById('med_nombre').value,
+                doc_e: document.getElementById('med_esp').value,
+                doc_p: document.getElementById('med_prof').value,
+                doc_m: document.getElementById('med_mat').value,
+                doc_r: document.getElementById('med_refeps').value,
+                doc_d: document.getElementById('med_dir').value
             };
 
-            // Guarda los datos en el Excel de forma invisible (CORS SOLUCIONADO)
-            fetch(URL_BASE_DE_DATOS, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(data),
-                headers: { "Content-Type": "text/plain;charset=utf-8" }
-            }).then(res => {
-                btn.innerText = "Generar PDF Oficial MRx";
-                btn.disabled = false;
-                renderizarRecetaFinal(data);
-                setTimeout(() => { window.print(); }, 800);
-            }).catch(err => {
-                alert("Error al guardar. Revisá tu conexión a internet.");
-                btn.innerText = "Generar PDF Oficial MRx";
-                btn.disabled = false;
-            });
+            renderizarRecetaFinal(compactData);
+            setTimeout(() => { window.print(); }, 800);
         }
 
         function renderizarRecetaFinal(data) {
@@ -292,23 +271,26 @@
             document.getElementById('print-area').innerHTML = htmlOriginal + htmlDuplicado;
 
             const opcionesBarcode = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2.5 };
-            JsBarcode("#bar-recetario-orig", data.recetarioNro, opcionesBarcode);
-            JsBarcode("#bar-afiliado-orig", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
-            JsBarcode("#bar-recetario-dup", data.recetarioNro, opcionesBarcode);
-            JsBarcode("#bar-afiliado-dup", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
+            JsBarcode("#bar-recetario-orig", data.id, opcionesBarcode);
+            JsBarcode("#bar-afiliado-orig", data.afi !== "-" ? data.afi : data.dni, opcionesBarcode);
+            JsBarcode("#bar-recetario-dup", data.id, opcionesBarcode);
+            JsBarcode("#bar-afiliado-dup", data.afi !== "-" ? data.afi : data.dni, opcionesBarcode);
 
-            const linkSimulado = window.location.href.split('?')[0] + "?id=" + data.recetarioNro;
-            new QRCode(document.getElementById("qr-orig"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
-            new QRCode(document.getElementById("qr-dup"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
+            // Encripta la receta entera en Base64 para el código QR
+            const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+            const linkEscaneo = window.location.href.split('?')[0] + "?d=" + encodedData;
+            
+            new QRCode(document.getElementById("qr-orig"), { text: linkEscaneo, width: 100, height: 100, correctLevel: QRCode.CorrectLevel.L });
+            new QRCode(document.getElementById("qr-dup"), { text: linkEscaneo, width: 100, height: 100, correctLevel: QRCode.CorrectLevel.L });
         }
 
         function generarPaginaHTML(data, esDuplicado) {
             const sufijo = esDuplicado ? 'dup' : 'orig';
-            const medsHTML = data.medicamentos.map(m => `
-                <li>${m.nombre}
+            const medsHTML = data.meds.map(m => `
+                <li>${m.n}
                     <div class="rp-details">
-                        <p><strong>Cantidad:</strong> ${m.cant}</p>
-                        ${m.diag ? `<p><strong>Diagnóstico:</strong> ${m.diag}</p>` : ''}
+                        <p><strong>Cantidad:</strong> ${m.c}</p>
+                        ${m.d ? `<p><strong>Diagnóstico:</strong> ${m.d}</p>` : ''}
                     </div>
                 </li>
             `).join('');
@@ -318,22 +300,22 @@
                     ${esDuplicado ? '<div class="pink-title">Duplicado</div>' : ''}
                     
                     <div class="text-center">
-                        <p class="main-header">Fecha Receta: ${data.fecha}</p>
+                        <p class="main-header">Fecha Receta: ${data.fec}</p>
                         <p style="font-weight: bold; margin-bottom: 5px;">Recetario:</p>
                         <svg id="bar-recetario-${sufijo}" class="barcode-svg"></svg>
-                        <p class="barcode-sub">${data.recetarioNro}</p>
+                        <p class="barcode-sub">${data.id}</p>
                         <p style="font-weight: bold; margin-bottom: 5px; margin-top: 10px;">Nro Afiliado:</p>
                         <svg id="bar-afiliado-${sufijo}" class="barcode-svg"></svg>
-                        <p class="barcode-sub">${data.afiliado !== "-" ? data.afiliado : data.dni}</p>
+                        <p class="barcode-sub">${data.afi !== "-" ? data.afi : data.dni}</p>
                     </div>
 
                     <div class="patient-info">
                         <p><strong>OS:</strong> ${data.os}</p>
-                        <p><strong>Afiliado:</strong> ${data.paciente}</p>
+                        <p><strong>Afiliado:</strong> ${data.pac}</p>
                         <p><strong>D.N.I.:</strong> ${data.dni}</p>
-                        <p><strong>CUIL:</strong> ${data.cuil}</p>
-                        <p><strong>Sexo:</strong> ${data.sexo}</p>
-                        <p><strong>Fecha Nacimiento:</strong> ${data.nacimiento}</p>
+                        <p><strong>CUIL:</strong> ${data.cui}</p>
+                        <p><strong>Sexo:</strong> ${data.sex}</p>
+                        <p><strong>Fecha Nacimiento:</strong> ${data.nac}</p>
                     </div>
 
                     <p class="rp-title">RP/</p>
@@ -343,21 +325,21 @@
 
                     <div class="signature-block">
                         <p class="italic-bold">Firmado electrónicamente por:</p>
-                        <p><strong>Dr/a:</strong> ${data.med_nombre}</p>
-                        <p><strong>REFEPS:</strong> ${data.med_refeps}</p>
-                        <p><strong>Matricula:</strong> ${data.med_mat}</p>
-                        <p><strong>Profesión:</strong> ${data.med_prof}</p>
-                        <p><strong>Especialidad:</strong> ${data.med_esp}</p>
-                        <p><strong>Dirección:</strong> ${data.med_dir}</p>
+                        <p><strong>Dr/a:</strong> ${data.doc_n}</p>
+                        <p><strong>REFEPS:</strong> ${data.doc_r}</p>
+                        <p><strong>Matricula:</strong> ${data.doc_m}</p>
+                        <p><strong>Profesión:</strong> ${data.doc_p}</p>
+                        <p><strong>Especialidad:</strong> ${data.doc_e}</p>
+                        <p><strong>Dirección:</strong> ${data.doc_d}</p>
                     </div>
 
                     <div style="margin-top: 20px;">
                         <p><strong>Posología / Notas:</strong></p>
-                        <p>${data.posologia}</p>
+                        <p>${data.pos}</p>
                     </div>
 
                     <div style="margin-top: 30px;">
-                        <p class="grey-text">Emitida: ${data.fecha} ${data.hora}</p>
+                        <p class="grey-text">Emitida: ${data.fec} ${data.hor}</p>
                         <p class="grey-text">Esta receta debe validarse on-line ingresando el número de recetario o autorización</p>
                     </div>
 
@@ -365,6 +347,7 @@
 
                     <div class="footer-flex">
                         <div class="mrx-logo-container">
+                            <!-- El logo oficial alojado en GitHub -->
                             <img src="icono.png" class="mrx-logo-img" alt="Logo MRx">
                         </div>
 
