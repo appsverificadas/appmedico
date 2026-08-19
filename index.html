@@ -120,8 +120,8 @@
     <div id="print-area"></div>
 
     <script>
-        // PEGA ACÁ TU LINK DEL PASO 1 (MANTENÉ LAS COMILLAS)
-        const URL_BASE_DE_DATOS = "https://script.google.com/macros/s/AKfycbz0sW9Sk4Xc7EgUbgFB5xeCmldrEiDlNLDz_bm3kerV5n1XmB7L_p8xrfFPvC3DT8GF/exec";
+        // PEGA ACÁ TU LINK DE APPS SCRIPT (MANTENÉ LAS COMILLAS)
+        const URL_BASE_DE_DATOS = "PEGA_TU_LINK_AQUI";
 
         const dbMedicamentos = [
             "escitalopram, 10 mg comp.rec.x 30", "escitalopram, 20 mg comp.rec.x 30",
@@ -195,9 +195,9 @@
                     if(data.error) {
                         document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:red; margin-top:50px;'>❌ Error: Receta no encontrada o inválida.</h2>";
                     } else {
-                        medicamentos = data.medicamentos; // Carga los medicamentos de la nube
+                        medicamentos = data.medicamentos;
                         renderizarRecetaFinal(data);
-                        setTimeout(() => { window.print(); }, 1500); // Abre el PDF en el celular
+                        setTimeout(() => { window.print(); }, 1500);
                     }
                 }).catch(err => alert("Error de conexión."));
             } else {
@@ -268,9 +268,10 @@
                 med_dir: document.getElementById('med_dir').value
             };
 
-            // Guarda los datos en el Excel de forma invisible
+            // Guarda los datos en el Excel de forma invisible (CORS SOLUCIONADO)
             fetch(URL_BASE_DE_DATOS, {
                 method: 'POST',
+                mode: 'no-cors',
                 body: JSON.stringify(data),
                 headers: { "Content-Type": "text/plain;charset=utf-8" }
             }).then(res => {
@@ -296,7 +297,6 @@
             JsBarcode("#bar-recetario-dup", data.recetarioNro, opcionesBarcode);
             JsBarcode("#bar-afiliado-dup", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
 
-            // Genera el Link del Código QR apuntando a sí misma en GitHub
             const linkSimulado = window.location.href.split('?')[0] + "?id=" + data.recetarioNro;
             new QRCode(document.getElementById("qr-orig"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
             new QRCode(document.getElementById("qr-dup"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
