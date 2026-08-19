@@ -25,11 +25,15 @@
 
         /* ESTILOS EXACTOS PARA EL PDF */
         @media print {
-            @page { size: A4; margin: 10mm 15mm; }
+            /* ESTA LÍNEA ELIMINA LA FECHA, LA URL Y EL TÍTULO DEL NAVEGADOR */
+            @page { size: A4; margin: 0; } 
+            
             body { background: white; margin: 0; padding: 0; }
             .ui-container { display: none; }
             #print-area { display: block; width: 100%; color: #000; }
-            .page-break { page-break-before: always; }
+            
+            /* Le devolvemos el margen interno a la hoja para que el texto no toque el borde */
+            .pdf-page { padding: 15mm; box-sizing: border-box; height: 297mm; position: relative; }
             
             .text-center { text-align: center; }
             p { margin: 2px 0; font-size: 11pt; }
@@ -69,7 +73,7 @@
     <div class="ui-container">
         <h1 style="color:#0F4C81; text-align:center; margin-top:0;">Sistema de Recetas MRx</h1>
         
-        <!-- DATOS DEL PROFESIONAL (CONFIGURABLE) -->
+        <!-- DATOS DEL PROFESIONAL -->
         <div class="section-prof">
             <h3 style="margin-top:0; color:#0F4C81;">1. Datos del Profesional Activo</h3>
             <div class="form-row">
@@ -133,7 +137,6 @@
     <script>
         // --- BASES DE DATOS PRECARGADAS ---
         
-        // 1. Medicamentos (Ejemplo de 100+ Psiquiátricos y Generales)
         const dbMedicamentos = [
             "escitalopram, 10 mg comp.rec.x 30", "escitalopram, 20 mg comp.rec.x 30",
             "clonazepam, 0.5 mg comp.x 30", "clonazepam, 1 mg comp.x 60", "clonazepam, 2 mg comp.x 30",
@@ -165,7 +168,6 @@
             "paracetamol, 500 mg comp.x 20", "paracetamol, 1g comp.x 20"
         ];
 
-        // 2. Diagnósticos CIE-10 (Psiquiatría y Generales)
         const dbDiagnosticos = [
             "F41.9 - Trastorno de ansiedad, no especificado",
             "F41.0 - Trastorno de pánico [ansiedad paroxística episódica]",
@@ -184,7 +186,6 @@
             "Z00.0 - Examen médico general"
         ];
 
-        // 3. Posologías
         const dbPosologias = [
             "1 comp / 24 hs.", "1 comp / 12 hs.", "1 comp / 8 hs.",
             "1/2 comp / 24 hs.", "1/2 comp a la mañana, 1/2 comp a la noche.",
@@ -192,7 +193,6 @@
             "Tomar con las comidas."
         ];
 
-        // --- INICIALIZACIÓN ---
         window.onload = function() {
             const poblarDatalist = (id, array) => {
                 const list = document.getElementById(id);
@@ -239,7 +239,6 @@
         function prepararImpresion() {
             if(medicamentos.length === 0) return alert("Agregá al menos un medicamento a la lista.");
 
-            // Recopilamos todos los datos (Paciente + Médico)
             const data = {
                 paciente: document.getElementById('paciente').value || "No indicado",
                 dni: document.getElementById('dni').value || "-",
@@ -253,7 +252,6 @@
                 hora: new Date().toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'}),
                 recetarioNro: Math.floor(Math.random() * 10000000000000).toString(), 
                 
-                // Datos del Profesional
                 med_nombre: document.getElementById('med_nombre').value,
                 med_esp: document.getElementById('med_esp').value,
                 med_prof: document.getElementById('med_prof').value,
@@ -265,16 +263,14 @@
             const htmlOriginal = generarPaginaHTML(data, false);
             const htmlDuplicado = generarPaginaHTML(data, true);
 
-            document.getElementById('print-area').innerHTML = htmlOriginal + '<div class="page-break"></div>' + htmlDuplicado;
+            document.getElementById('print-area').innerHTML = htmlOriginal + htmlDuplicado;
 
-            // Códigos de Barras
             const opcionesBarcode = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2.5 };
             JsBarcode("#bar-recetario-orig", data.recetarioNro, opcionesBarcode);
             JsBarcode("#bar-afiliado-orig", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
             JsBarcode("#bar-recetario-dup", data.recetarioNro, opcionesBarcode);
             JsBarcode("#bar-afiliado-dup", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
 
-            // Códigos QR
             const linkSimulado = "https://validar-receta.gob.ar/v/" + data.recetarioNro;
             new QRCode(document.getElementById("qr-orig"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
             new QRCode(document.getElementById("qr-dup"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
@@ -294,74 +290,76 @@
             `).join('');
 
             return `
-                ${esDuplicado ? '<div class="pink-title">Duplicado</div>' : ''}
-                
-                <div class="text-center">
-                    <p class="main-header">Fecha Receta: ${data.fecha}</p>
+                <div class="pdf-page" style="${esDuplicado ? 'page-break-before: always;' : ''}">
+                    ${esDuplicado ? '<div class="pink-title">Duplicado</div>' : ''}
                     
-                    <p style="font-weight: bold; margin-bottom: 5px;">Recetario:</p>
-                    <svg id="bar-recetario-${sufijo}" class="barcode-svg"></svg>
-                    <p class="barcode-sub">${data.recetarioNro}</p>
-                    
-                    <p style="font-weight: bold; margin-bottom: 5px; margin-top: 10px;">Nro Afiliado:</p>
-                    <svg id="bar-afiliado-${sufijo}" class="barcode-svg"></svg>
-                    <p class="barcode-sub">${data.afiliado !== "-" ? data.afiliado : data.dni}</p>
-                </div>
-
-                <div class="patient-info">
-                    <p><strong>OS:</strong> ${data.os}</p>
-                    <p><strong>Afiliado:</strong> ${data.paciente}</p>
-                    <p><strong>D.N.I.:</strong> ${data.dni}</p>
-                    <p><strong>CUIL:</strong> ${data.cuil}</p>
-                    <p><strong>Sexo:</strong> ${data.sexo}</p>
-                    <p><strong>Fecha Nacimiento:</strong> ${data.nacimiento}</p>
-                </div>
-
-                <p class="rp-title">RP/</p>
-                <ul class="rp-list">
-                    ${medsHTML}
-                </ul>
-
-                <div class="signature-block">
-                    <p class="italic-bold">Firmado electrónicamente por:</p>
-                    <p><strong>Dr/a:</strong> ${data.med_nombre}</p>
-                    <p><strong>REFEPS:</strong> ${data.med_refeps}</p>
-                    <p><strong>Matricula:</strong> ${data.med_mat}</p>
-                    <p><strong>Profesión:</strong> ${data.med_prof}</p>
-                    <p><strong>Especialidad:</strong> ${data.med_esp}</p>
-                    <p><strong>Dirección:</strong> ${data.med_dir}</p>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <p><strong>Posología / Notas:</strong></p>
-                    <p>${data.posologia}</p>
-                </div>
-
-                <div style="margin-top: 30px;">
-                    <p class="grey-text">Emitida: ${data.fecha} ${data.hora}</p>
-                    <p class="grey-text">Esta receta debe validarse on-line ingresando el número de recetario o autorización</p>
-                </div>
-
-                <div class="separator"></div>
-
-                <div class="footer-flex">
-                    <!-- LLAMADA A LA IMAGEN REAL (mrx_digital.png) -->
-                    <div class="mrx-logo-container">
-                        <img src="mrx_digital.png" class="mrx-logo-img" alt="Logo MRx">
+                    <div class="text-center">
+                        <p class="main-header">Fecha Receta: ${data.fecha}</p>
+                        
+                        <p style="font-weight: bold; margin-bottom: 5px;">Recetario:</p>
+                        <svg id="bar-recetario-${sufijo}" class="barcode-svg"></svg>
+                        <p class="barcode-sub">${data.recetarioNro}</p>
+                        
+                        <p style="font-weight: bold; margin-bottom: 5px; margin-top: 10px;">Nro Afiliado:</p>
+                        <svg id="bar-afiliado-${sufijo}" class="barcode-svg"></svg>
+                        <p class="barcode-sub">${data.afiliado !== "-" ? data.afiliado : data.dni}</p>
                     </div>
 
-                    <div class="qr-box">
-                        <span style="font-size: 11pt;">Firma Electrónica:</span>
-                        <div id="qr-${sufijo}"></div>
+                    <div class="patient-info">
+                        <p><strong>OS:</strong> ${data.os}</p>
+                        <p><strong>Afiliado:</strong> ${data.paciente}</p>
+                        <p><strong>D.N.I.:</strong> ${data.dni}</p>
+                        <p><strong>CUIL:</strong> ${data.cuil}</p>
+                        <p><strong>Sexo:</strong> ${data.sexo}</p>
+                        <p><strong>Fecha Nacimiento:</strong> ${data.nacimiento}</p>
                     </div>
+
+                    <p class="rp-title">RP/</p>
+                    <ul class="rp-list">
+                        ${medsHTML}
+                    </ul>
+
+                    <div class="signature-block">
+                        <p class="italic-bold">Firmado electrónicamente por:</p>
+                        <p><strong>Dr/a:</strong> ${data.med_nombre}</p>
+                        <p><strong>REFEPS:</strong> ${data.med_refeps}</p>
+                        <p><strong>Matricula:</strong> ${data.med_mat}</p>
+                        <p><strong>Profesión:</strong> ${data.med_prof}</p>
+                        <p><strong>Especialidad:</strong> ${data.med_esp}</p>
+                        <p><strong>Dirección:</strong> ${data.med_dir}</p>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <p><strong>Posología / Notas:</strong></p>
+                        <p>${data.posologia}</p>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <p class="grey-text">Emitida: ${data.fecha} ${data.hora}</p>
+                        <p class="grey-text">Esta receta debe validarse on-line ingresando el número de recetario o autorización</p>
+                    </div>
+
+                    <div class="separator"></div>
+
+                    <div class="footer-flex">
+                        <!-- EL LOGO AHORA BUSCA LA IMAGEN EXACTA CON EL ESPACIO EN EL NOMBRE -->
+                        <div class="mrx-logo-container">
+                            <img src="mrx digital.png" class="mrx-logo-img" alt="Logo MRx">
+                        </div>
+
+                        <div class="qr-box">
+                            <span style="font-size: 11pt;">Firma Electrónica:</span>
+                            <div id="qr-${sufijo}"></div>
+                        </div>
+                    </div>
+
+                    <p class="grey-text" style="margin-top: 10px;">La firma electrónica sustituye legalmente a la firma ológrafa</p>
+
+                    <div class="separator"></div>
+
+                    <p class="small-footer">Buscador Nacional de Medicamentos:<br><a href="#" style="color:blue; text-decoration:underline;">https://www.argentina.gob.ar/buscador-de-precios-de-medicamentos</a></p>
+                    <p class="small-footer" style="margin-top: 10px;">Esta receta fue creada por un emisor inscripto y validado en el Registro de Recetarios Electrónicos del<br>Ministerio de Salud de la Nación (Resolución RL-2024-91317760-APN-SSVEIYES#MS)</p>
                 </div>
-
-                <p class="grey-text" style="margin-top: 10px;">La firma electrónica sustituye legalmente a la firma ológrafa</p>
-
-                <div class="separator"></div>
-
-                <p class="small-footer">Buscador Nacional de Medicamentos:<br><a href="#" style="color:blue; text-decoration:underline;">https://www.argentina.gob.ar/buscador-de-precios-de-medicamentos</a></p>
-                <p class="small-footer" style="margin-top: 10px;">Esta receta fue creada por un emisor inscripto y validado en el Registro de Recetarios Electrónicos del<br>Ministerio de Salud de la Nación (Resolución RL-2024-91317760-APN-SSVEIYES#MS)</p>
             `;
         }
     </script>
