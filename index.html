@@ -72,7 +72,7 @@
         <h1 style="color:#0F4C81; text-align:center; margin-top:0;">Sistema de Recetas MRx</h1>
         
         <div class="section-prof">
-            <h3 style="margin-top:0; color:#0F4C81;">1. Datos del Profesional Activo</h3>
+            <h3 style="margin-top:0; color:#0F4C81;">1. Configuración del Profesional</h3>
             <div class="form-row">
                 <div style="flex: 2;"><label>Nombre y Apellido</label><input type="text" id="med_nombre" value="BARBERA MIRET, FRANCISCO"></div>
                 <div><label>Especialidad</label><input type="text" id="med_esp" value="PSIQUIATRIA"></div>
@@ -82,6 +82,16 @@
                 <div><label>Matrícula</label><input type="text" id="med_mat" value="MN 158282 (MINISTERIO DE SALUD CABA)"></div>
                 <div><label>REFEPS</label><input type="text" id="med_refeps" value="541033444821"></div>
                 <div><label>Dirección del Consultorio</label><input type="text" id="med_dir" value="No indicada"></div>
+            </div>
+            <!-- CARGADOR DE LOGO INTERNO -->
+            <div class="form-row" style="margin-top: 10px; background: white; padding: 10px; border-radius: 4px;">
+                <div style="flex: 1;">
+                    <label>Cargar Logo de la Receta (Se guarda automáticamente)</label>
+                    <input type="file" id="logo-input" accept="image/*" onchange="guardarLogo()" style="padding: 5px;">
+                </div>
+                <div style="flex: 1; display: flex; justify-content: flex-end;">
+                    <img id="preview-logo" style="max-height: 50px; display: none; border-radius: 50%;">
+                </div>
             </div>
         </div>
 
@@ -187,6 +197,7 @@
             "Tomar con las comidas."
         ];
 
+        // CARGA INICIAL
         window.onload = function() {
             const poblarDatalist = (id, array) => {
                 const list = document.getElementById(id);
@@ -199,7 +210,27 @@
             poblarDatalist("lista-meds", dbMedicamentos);
             poblarDatalist("lista-diag", dbDiagnosticos);
             poblarDatalist("lista-pos", dbPosologias);
+
+            // Cargar logo guardado previamente
+            const logoGuardado = localStorage.getItem('mrx_logo_base64');
+            if(logoGuardado) {
+                document.getElementById('preview-logo').src = logoGuardado;
+                document.getElementById('preview-logo').style.display = 'block';
+            }
         };
+
+        // FUNCIÓN PARA GUARDAR EL LOGO EN EL NAVEGADOR
+        function guardarLogo() {
+            const file = document.getElementById('logo-input').files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                localStorage.setItem('mrx_logo_base64', reader.result);
+                document.getElementById('preview-logo').src = reader.result;
+                document.getElementById('preview-logo').style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
 
         let medicamentos = [];
 
@@ -233,6 +264,8 @@
         function prepararImpresion() {
             if(medicamentos.length === 0) return alert("Agregá al menos un medicamento a la lista.");
 
+            const logoData = localStorage.getItem('mrx_logo_base64') || '';
+
             const data = {
                 paciente: document.getElementById('paciente').value || "No indicado",
                 dni: document.getElementById('dni').value || "-",
@@ -254,8 +287,8 @@
                 med_dir: document.getElementById('med_dir').value
             };
 
-            const htmlOriginal = generarPaginaHTML(data, false);
-            const htmlDuplicado = generarPaginaHTML(data, true);
+            const htmlOriginal = generarPaginaHTML(data, logoData, false);
+            const htmlDuplicado = generarPaginaHTML(data, logoData, true);
 
             document.getElementById('print-area').innerHTML = htmlOriginal + htmlDuplicado;
 
@@ -272,7 +305,7 @@
             setTimeout(() => { window.print(); }, 500);
         }
 
-        function generarPaginaHTML(data, esDuplicado) {
+        function generarPaginaHTML(data, logoData, esDuplicado) {
             const sufijo = esDuplicado ? 'dup' : 'orig';
             const medsHTML = medicamentos.map(m => `
                 <li>${m.nombre}
@@ -282,6 +315,9 @@
                     </div>
                 </li>
             `).join('');
+
+            // Etiqueta de imagen que se alimenta de la memoria del navegador
+            const logoHTML = logoData ? `<img src="${logoData}" class="mrx-logo-img" alt="Logo MRx">` : `<p style="font-size:10px; color:red;">Falta cargar Logo</p>`;
 
             return `
                 <div class="pdf-page" style="${esDuplicado ? 'page-break-before: always;' : ''}">
@@ -336,9 +372,9 @@
                     <div class="separator"></div>
 
                     <div class="footer-flex">
-                        <!-- EL LOGO LLAMA A icono.png -->
+                        <!-- EL LOGO CARGA DESDE LA MEMORIA BASE64 -->
                         <div class="mrx-logo-container">
-                            <img src="icono.png" class="mrx-logo-img" alt="Logo MRx">
+                            ${logoHTML}
                         </div>
 
                         <div class="qr-box">
