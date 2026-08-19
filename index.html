@@ -122,7 +122,64 @@
 
     <script>
         const dbMedicamentos = [
-            // PSIQUIATRÍA / NEUROLOGÍA
+            // --- GOTAS (OFTÁLMICAS, ÓTICAS, ORALES Y NEBULIZACIÓN) ---
+            "clonazepam, 2.5 mg/ml gotas orales x 20 ml",
+            "haloperidol, 2 mg/ml gotas orales x 20 ml",
+            "risperidona, 1 mg/ml gotas orales x 30 ml",
+            "metoclopramida, 10 mg/ml gotas orales x 20 ml",
+            "hioscina butilbromuro (Buscapina), 20 mg/ml gotas x 20 ml",
+            "paracetamol, 100 mg/ml gotas orales x 20 ml",
+            "ibuprofeno, 40 mg/ml susp. gotas x 30 ml",
+            "betametasona, 0.5 mg/ml gotas orales x 30 ml",
+            "dexclorfeniramina + betametasona, gotas orales x 30 ml",
+            "salbutamol, 5 mg/ml sol. para nebulizar x 20 ml",
+            "budesonide, 0.25 mg/ml susp. para nebulizar x 20 ml",
+            "ipratropio bromuro, 2.5 mg/ml sol. para nebulizar x 20 ml",
+            "tobramicina, 0.3% gotas oftálmicas x 5 ml",
+            "tobramicina + dexametasona, gotas oftálmicas x 5 ml",
+            "ciprofloxacina + dexametasona, gotas óticas x 5 ml",
+            "dorzolamida + timolol, gotas oftálmicas x 5 ml",
+            "latanoprost, 0.005% gotas oftálmicas x 2.5 ml",
+            "ketorolac, 0.5% gotas oftálmicas x 5 ml",
+            "nafazolina, gotas oftálmicas x 10 ml",
+            
+            // --- INYECTABLES (AMPOLLAS, JERINGAS PRELLENADAS, FRASCOS AMPOLLA) ---
+            "diclofenac, 75 mg iny. x 5 amp.",
+            "diclofenac + pridinol, iny. x 3 amp.",
+            "ketorolac, 30 mg iny. x 3 amp.",
+            "dexametasona, 8 mg/2ml iny. x 3 amp.",
+            "betametasona (acetato+fosfato), 3 mg/ml iny. x 1 amp. (Cronocorteroid)",
+            "betametasona, 4 mg/ml iny. x 1 amp.",
+            "hidrocortisona, 100 mg iny. x 1 f.a.",
+            "hidrocortisona, 500 mg iny. x 1 f.a.",
+            "metilprednisolona, 500 mg iny. x 1 f.a.",
+            "lorazepam, 4 mg/ml iny. x 1 amp.",
+            "diazepam, 10 mg/2ml iny. x 5 amp.",
+            "haloperidol, 5 mg/ml iny. x 5 amp.",
+            "midazolam, 15 mg/3ml iny. x 5 amp.",
+            "metoclopramida, 10 mg/2ml iny. x 5 amp.",
+            "hioscina butilbromuro, 20 mg iny. x 3 amp.",
+            "omeprazol, 40 mg iny. x 1 f.a.",
+            "pantoprazol, 40 mg iny. x 1 f.a.",
+            "furosemida, 20 mg/2ml iny. x 5 amp.",
+            "amiodarona, 150 mg/3ml iny. x 5 amp.",
+            "enoxaparina, 40 mg jeringa prellenada x 2",
+            "enoxaparina, 60 mg jeringa prellenada x 2",
+            "ceftriaxona, 1g iny. IM x 1 f.a.",
+            "ceftriaxona, 1g iny. IV x 1 f.a.",
+            "penicilina G benzatínica, 1.200.000 UI iny. x 1 f.a.",
+            "penicilina G benzatínica, 2.400.000 UI iny. x 1 f.a.",
+            "gentamicina, 80 mg iny. x 1 amp.",
+            "clindamicina, 600 mg iny. x 1 amp.",
+            "bupivacaína, 0.5% iny. x 1 f.a.",
+            "lidocaína, 2% s/epinefrina iny. x 1 f.a.",
+            "complejo B (B1, B6, B12), iny. x 3 amp.",
+            "hierro sacarato, 100 mg/5ml iny. x 5 amp.",
+            "insulina glargina, 100 U/ml lapicera prellenada x 5",
+            "insulina aspartoflex, 100 U/ml lapicera prellenada x 5",
+            "insulina NPH, 100 U/ml f.a. x 1",
+
+            // --- COMPRIMIDOS Y CÁPSULAS (TODAS LAS ESPECIALIDADES) ---
             "escitalopram, 10 mg comp.rec.x 30", "escitalopram, 20 mg comp.rec.x 30",
             "clonazepam, 0.25 mg comp.x 30", "clonazepam, 0.5 mg comp.x 30", "clonazepam, 1 mg comp.x 60", "clonazepam, 2 mg comp.x 30",
             "alprazolam, 0.5 mg comp.x 30", "alprazolam, 1 mg comp.x 30", "alprazolam, 2 mg comp.x 30",
@@ -151,7 +208,6 @@
             "atomoxetina, 40 mg caps.x 30", "atomoxetina, 80 mg caps.x 30",
             "donepecilo, 5 mg comp.x 30", "donepecilo, 10 mg comp.x 30",
             "memantina, 10 mg comp.x 30", "memantina, 20 mg comp.x 30",
-            // CARDIOLOGÍA / HIPERTENSIÓN / COLESTEROL
             "losartán, 50 mg comp.x 30", "losartán, 100 mg comp.x 30",
             "valsartán, 80 mg comp.x 30", "valsartán, 160 mg comp.x 30",
             "enalapril, 10 mg comp.x 30", "enalapril, 20 mg comp.x 30",
@@ -168,7 +224,6 @@
             "aspirina, 100 mg comp.x 30", "clopidogrel, 75 mg comp.x 30",
             "rivaroxabán, 15 mg comp.x 30", "rivaroxabán, 20 mg comp.x 30",
             "apixabán, 2.5 mg comp.x 60", "apixabán, 5 mg comp.x 60",
-            // ENDOCRINOLOGÍA / DIABETES / TIROIDES
             "metformina, 500 mg comp.x 30", "metformina, 850 mg comp.x 30", "metformina, 1000 mg comp.x 30",
             "glimepirida, 2 mg comp.x 30", "glimepirida, 4 mg comp.x 30",
             "gliclazida, 60 mg comp.lib.mod.x 30",
@@ -177,29 +232,26 @@
             "empagliflozina, 10 mg comp.x 30", "empagliflozina, 25 mg comp.x 30",
             "dapagliflozina, 10 mg comp.x 30",
             "levotiroxina, 50 mcg comp.x 50", "levotiroxina, 75 mcg comp.x 50", "levotiroxina, 100 mcg comp.x 50", "levotiroxina, 112 mcg comp.x 50", "levotiroxina, 125 mcg comp.x 50",
-            // GASTROENTEROLOGÍA
             "omeprazol, 20 mg caps.x 30", "omeprazol, 40 mg caps.x 30",
             "pantoprazol, 40 mg comp.x 30", "lansoprazol, 30 mg caps.x 30", "esomeprazol, 40 mg comp.x 30",
             "domperidona, 10 mg comp.x 30", "mosaprida, 5 mg comp.x 30",
             "trimebutina, 200 mg comp.x 30", "mebeverina, 200 mg caps.x 30",
-            "metoclopramida, 10 mg comp.x 20", "metoclopramida, 10 mg/ml gotas x 20ml",
+            "metoclopramida, 10 mg comp.x 20",
             "ondansetrón, 8 mg comp.x 10",
             "ácido ursodesoxicólico, 300 mg comp.x 30",
-            // ANALGÉSICOS / ANTIINFLAMATORIOS / TRAUMATOLOGÍA
             "ibuprofeno, 400 mg comp.x 20", "ibuprofeno, 600 mg comp.x 20", "ibuprofeno, 800 mg comp.x 20",
             "paracetamol, 500 mg comp.x 20", "paracetamol, 1g comp.x 20",
-            "diclofenac, 50 mg comp.x 30", "diclofenac, 75 mg comp.x 30", "diclofenac, 75 mg iny.x 5",
-            "ketorolac, 10 mg comp.x 20", "ketorolac, 20 mg comp.x 10", "ketorolac, 30 mg iny.x 3",
+            "diclofenac, 50 mg comp.x 30", "diclofenac, 75 mg comp.x 30",
+            "ketorolac, 10 mg comp.x 20", "ketorolac, 20 mg comp.x 10",
             "naproxeno, 500 mg comp.x 20",
             "meloxicam, 15 mg comp.x 20", "piroxicam, 20 mg comp.x 20",
             "celecoxib, 200 mg caps.x 20", "etoricoxib, 90 mg comp.x 14", "etoricoxib, 120 mg comp.x 7",
             "tramadol, 50 mg caps.x 20", "tramadol/paracetamol, 37.5/325 mg comp.x 20",
             "meprednisona, 4 mg comp.x 20", "meprednisona, 8 mg comp.x 20", "meprednisona, 40 mg comp.x 20",
-            "dexametasona, 4 mg comp.x 20", "dexametasona, 8 mg iny.x 3",
+            "dexametasona, 4 mg comp.x 20",
             "betametasona, 2 mg comp.x 20",
             "ciclobenzaprina, 10 mg comp.x 20", "pridinol, 4 mg comp.x 20",
             "alendronato, 70 mg comp.x 4", "ibandronato, 150 mg comp.x 1",
-            // ANTIBIÓTICOS / INFECCIOSAS
             "amoxicilina, 500 mg comp.x 21", "amoxicilina, 875 mg comp.x 14", "amoxicilina, 500 mg/5ml susp.x 90ml",
             "amoxicilina + ac. clavulánico 875/125 mg comp.x 14", "amoxicilina + ac. clavulánico 1g comp.x 14",
             "cefalexina, 500 mg comp.x 16", "cefalexina, 1g comp.x 16",
@@ -213,7 +265,6 @@
             "metronidazol, 500 mg comp.x 20",
             "fluconazol, 150 mg caps.x 2", "fluconazol, 150 mg caps.x 4",
             "aciclovir, 400 mg comp.x 20", "aciclovir, 800 mg comp.x 20",
-            // RESPIRATORIO / ALERGIAS
             "salbutamol, 100 mcg aerosol x 200 dosis",
             "budesonide, 200 mcg aerosol x 100 dosis",
             "fluticasona/salmeterol, 250/50 mcg aerosol x 120 dosis",
@@ -222,7 +273,6 @@
             "loratadina, 10 mg comp.x 10", "desloratadina, 5 mg comp.x 10",
             "cetirizina, 10 mg comp.x 10", "levocetirizina, 5 mg comp.x 10",
             "fexofenadina, 120 mg comp.x 10",
-            // GINECOLOGÍA / UROLOGÍA
             "drospirenona/etinilestradiol, 3/0.03 mg comp.x 28", "drospirenona/etinilestradiol, 3/0.02 mg comp.x 28",
             "dienogest/etinilestradiol, 2/0.03 mg comp.x 28",
             "levonorgestrel, 1.5 mg comp.x 1",
@@ -297,7 +347,8 @@
             // OTROS / GENERAL
             "Z00.0 - Examen médico general", "Z01.2 - Examen odontológico", "Z30.0 - Consejo y asesoramiento general sobre la anticoncepción",
             "R50.9 - Fiebre, no especificada", "R51 - Cefalea", "R55 - Síncope y colapso",
-            "B35.1 - Tiña de las uñas (onicomicosis)", "L20.9 - Dermatitis atópica, no especificada"
+            "B35.1 - Tiña de las uñas (onicomicosis)", "L20.9 - Dermatitis atópica, no especificada",
+            "H10.9 - Conjuntivitis, no especificada", "H65.9 - Otitis media no supurativa, no especificada"
         ];
 
         const dbPosologias = [
@@ -305,6 +356,12 @@
             "1/2 comp / 24 hs.", "1/2 comp a la mañana, 1/2 comp a la noche.",
             "1 comp por la noche antes de dormir.", 
             "Tomar con el desayuno.", "Tomar lejos de las comidas.", "Tomar 30 minutos antes del desayuno.",
+            "Aplicar 1 ampolla IM por única vez.", "Aplicar 1 ampolla IM cada 12 hs.", "Aplicar 1 ampolla IM por 3 días.",
+            "Inyectar 1 f.a. endovenoso según protocolo.",
+            "Aplicar 1 gota en cada ojo afectado cada 12 hs.", "Aplicar 1 gota en cada ojo afectado cada 8 hs.",
+            "Aplicar 2 gotas en el oído afectado cada 8 hs.",
+            "Tomar 20 gotas cada 8 hs en un poco de agua.", "Tomar 30 gotas ante síntomas.",
+            "Nebulizar con 20 gotas + 3ml de solución fisiológica cada 8 hs.",
             "Aplicar 1 puff cada 12 hs.", "Aplicar en la zona afectada cada 12 hs.",
             "Según indicación médica.", "Tomar con abundante agua."
         ];
