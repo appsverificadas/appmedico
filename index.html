@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Generador Oficial MRx - Clínicas</title>
+    <title>Generador Oficial MRx - Clínicas y Policonsultorios</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
@@ -52,9 +52,7 @@
             .mrx-logo-img { width: 100%; height: 100%; object-fit: contain; }
             .qr-box { display: flex; align-items: center; gap: 15px; }
             .small-footer { font-size: 8pt; text-align: center; }
-            
-            /* Ajuste clave para que el QR HD se vea del tamaño perfecto en el PDF */
-            .qr-container canvas, .qr-container img { width: 85px !important; height: 85px !important; }
+            .qr-container canvas, .qr-container img { width: 120px !important; height: 120px !important; }
         }
     </style>
 </head>
@@ -67,13 +65,13 @@
             <h3 style="margin-top:0; color:#0F4C81;">1. Configuración del Profesional</h3>
             <div class="form-row">
                 <div style="flex: 2;"><label>Nombre y Apellido</label><input type="text" id="med_nombre" value="BARBERA MIRET, FRANCISCO"></div>
-                <div><label>Especialidad</label><input type="text" id="med_esp" value="PSIQUIATRIA"></div>
+                <div><label>Especialidad</label><input type="text" id="med_esp" value="CLÍNICA MÉDICA"></div>
                 <div><label>Profesión</label><input type="text" id="med_prof" value="Médico"></div>
             </div>
             <div class="form-row">
-                <div><label>Matrícula</label><input type="text" id="med_mat" value="MN 158282 (MINISTERIO DE SALUD CABA)"></div>
+                <div><label>Matrícula</label><input type="text" id="med_mat" value="MN 158282"></div>
                 <div><label>REFEPS</label><input type="text" id="med_refeps" value="541033444821"></div>
-                <div><label>Dirección del Consultorio</label><input type="text" id="med_dir" value="No indicada"></div>
+                <div><label>Dirección del Consultorio</label><input type="text" id="med_dir" value="Av. Siempre Viva 123"></div>
             </div>
         </div>
 
@@ -124,11 +122,12 @@
 
     <script>
         const dbMedicamentos = [
+            // PSIQUIATRÍA / NEUROLOGÍA
             "escitalopram, 10 mg comp.rec.x 30", "escitalopram, 20 mg comp.rec.x 30",
-            "clonazepam, 0.5 mg comp.x 30", "clonazepam, 1 mg comp.x 60", "clonazepam, 2 mg comp.x 30",
+            "clonazepam, 0.25 mg comp.x 30", "clonazepam, 0.5 mg comp.x 30", "clonazepam, 1 mg comp.x 60", "clonazepam, 2 mg comp.x 30",
             "alprazolam, 0.5 mg comp.x 30", "alprazolam, 1 mg comp.x 30", "alprazolam, 2 mg comp.x 30",
             "sertralina, 50 mg comp.x 30", "sertralina, 100 mg comp.x 30",
-            "fluoxetina, 20 mg caps.x 30", "paroxetina, 20 mg comp.x 30",
+            "fluoxetina, 20 mg caps.x 30", "paroxetina, 20 mg comp.x 30", "paroxetina, 40 mg comp.x 30",
             "venlafaxina, 75 mg caps.lib.prol.x 30", "venlafaxina, 150 mg caps.lib.prol.x 30",
             "desvenlafaxina, 50 mg comp.x 30", "desvenlafaxina, 100 mg comp.x 30",
             "duloxetina, 30 mg caps.x 30", "duloxetina, 60 mg caps.x 30",
@@ -143,40 +142,171 @@
             "ácido valproico, 250 mg caps.x 50", "ácido valproico, 500 mg comp.lib.prol.x 50",
             "lamotrigina, 25 mg comp.x 30", "lamotrigina, 50 mg comp.x 30", "lamotrigina, 100 mg comp.x 30",
             "topiramato, 25 mg comp.x 28", "topiramato, 50 mg comp.x 28", "topiramato, 100 mg comp.x 28",
-            "pregabalina, 75 mg caps.x 30", "pregabalina, 150 mg caps.x 30",
-            "gabapentina, 300 mg caps.x 30",
+            "pregabalina, 25 mg caps.x 30", "pregabalina, 50 mg caps.x 30", "pregabalina, 75 mg caps.x 30", "pregabalina, 150 mg caps.x 30",
+            "gabapentina, 300 mg caps.x 30", "gabapentina, 600 mg comp.x 30",
             "zolpidem, 10 mg comp.x 30", "zopiclona, 7.5 mg comp.x 30",
             "lorazepam, 1 mg comp.x 30", "lorazepam, 2.5 mg comp.x 30",
             "diazepam, 5 mg comp.x 30", "diazepam, 10 mg comp.x 30",
             "metilfenidato, 10 mg comp.x 30", "metilfenidato, 20 mg comp.x 30",
-            "amoxicilina, 500 mg comp.x 21", "amoxicilina + ac. clavulanico 875/125 mg comp.x 14",
-            "ibuprofeno, 400 mg comp.x 20", "ibuprofeno, 600 mg comp.x 20",
-            "paracetamol, 500 mg comp.x 20", "paracetamol, 1g comp.x 20"
+            "atomoxetina, 40 mg caps.x 30", "atomoxetina, 80 mg caps.x 30",
+            "donepecilo, 5 mg comp.x 30", "donepecilo, 10 mg comp.x 30",
+            "memantina, 10 mg comp.x 30", "memantina, 20 mg comp.x 30",
+            // CARDIOLOGÍA / HIPERTENSIÓN / COLESTEROL
+            "losartán, 50 mg comp.x 30", "losartán, 100 mg comp.x 30",
+            "valsartán, 80 mg comp.x 30", "valsartán, 160 mg comp.x 30",
+            "enalapril, 10 mg comp.x 30", "enalapril, 20 mg comp.x 30",
+            "amlodipina, 5 mg comp.x 30", "amlodipina, 10 mg comp.x 30",
+            "atenolol, 50 mg comp.x 30", "atenolol, 100 mg comp.x 30",
+            "bisoprolol, 2.5 mg comp.x 30", "bisoprolol, 5 mg comp.x 30", "bisoprolol, 10 mg comp.x 30",
+            "carvedilol, 6.25 mg comp.x 30", "carvedilol, 12.5 mg comp.x 30", "carvedilol, 25 mg comp.x 30",
+            "nebivolol, 5 mg comp.x 30",
+            "furosemida, 40 mg comp.x 30", "hidroclorotiazida, 25 mg comp.x 30",
+            "espironolactona, 25 mg comp.x 30", "espironolactona, 50 mg comp.x 30",
+            "rosuvastatina, 10 mg comp.x 30", "rosuvastatina, 20 mg comp.x 30",
+            "atorvastatina, 10 mg comp.x 30", "atorvastatina, 20 mg comp.x 30", "atorvastatina, 40 mg comp.x 30",
+            "ezetimibe, 10 mg comp.x 30", "fenofibrato, 200 mg caps.x 30",
+            "aspirina, 100 mg comp.x 30", "clopidogrel, 75 mg comp.x 30",
+            "rivaroxabán, 15 mg comp.x 30", "rivaroxabán, 20 mg comp.x 30",
+            "apixabán, 2.5 mg comp.x 60", "apixabán, 5 mg comp.x 60",
+            // ENDOCRINOLOGÍA / DIABETES / TIROIDES
+            "metformina, 500 mg comp.x 30", "metformina, 850 mg comp.x 30", "metformina, 1000 mg comp.x 30",
+            "glimepirida, 2 mg comp.x 30", "glimepirida, 4 mg comp.x 30",
+            "gliclazida, 60 mg comp.lib.mod.x 30",
+            "sitagliptina, 50 mg comp.x 30", "sitagliptina, 100 mg comp.x 30",
+            "vildagliptina, 50 mg comp.x 30", "linagliptina, 5 mg comp.x 30",
+            "empagliflozina, 10 mg comp.x 30", "empagliflozina, 25 mg comp.x 30",
+            "dapagliflozina, 10 mg comp.x 30",
+            "levotiroxina, 50 mcg comp.x 50", "levotiroxina, 75 mcg comp.x 50", "levotiroxina, 100 mcg comp.x 50", "levotiroxina, 112 mcg comp.x 50", "levotiroxina, 125 mcg comp.x 50",
+            // GASTROENTEROLOGÍA
+            "omeprazol, 20 mg caps.x 30", "omeprazol, 40 mg caps.x 30",
+            "pantoprazol, 40 mg comp.x 30", "lansoprazol, 30 mg caps.x 30", "esomeprazol, 40 mg comp.x 30",
+            "domperidona, 10 mg comp.x 30", "mosaprida, 5 mg comp.x 30",
+            "trimebutina, 200 mg comp.x 30", "mebeverina, 200 mg caps.x 30",
+            "metoclopramida, 10 mg comp.x 20", "metoclopramida, 10 mg/ml gotas x 20ml",
+            "ondansetrón, 8 mg comp.x 10",
+            "ácido ursodesoxicólico, 300 mg comp.x 30",
+            // ANALGÉSICOS / ANTIINFLAMATORIOS / TRAUMATOLOGÍA
+            "ibuprofeno, 400 mg comp.x 20", "ibuprofeno, 600 mg comp.x 20", "ibuprofeno, 800 mg comp.x 20",
+            "paracetamol, 500 mg comp.x 20", "paracetamol, 1g comp.x 20",
+            "diclofenac, 50 mg comp.x 30", "diclofenac, 75 mg comp.x 30", "diclofenac, 75 mg iny.x 5",
+            "ketorolac, 10 mg comp.x 20", "ketorolac, 20 mg comp.x 10", "ketorolac, 30 mg iny.x 3",
+            "naproxeno, 500 mg comp.x 20",
+            "meloxicam, 15 mg comp.x 20", "piroxicam, 20 mg comp.x 20",
+            "celecoxib, 200 mg caps.x 20", "etoricoxib, 90 mg comp.x 14", "etoricoxib, 120 mg comp.x 7",
+            "tramadol, 50 mg caps.x 20", "tramadol/paracetamol, 37.5/325 mg comp.x 20",
+            "meprednisona, 4 mg comp.x 20", "meprednisona, 8 mg comp.x 20", "meprednisona, 40 mg comp.x 20",
+            "dexametasona, 4 mg comp.x 20", "dexametasona, 8 mg iny.x 3",
+            "betametasona, 2 mg comp.x 20",
+            "ciclobenzaprina, 10 mg comp.x 20", "pridinol, 4 mg comp.x 20",
+            "alendronato, 70 mg comp.x 4", "ibandronato, 150 mg comp.x 1",
+            // ANTIBIÓTICOS / INFECCIOSAS
+            "amoxicilina, 500 mg comp.x 21", "amoxicilina, 875 mg comp.x 14", "amoxicilina, 500 mg/5ml susp.x 90ml",
+            "amoxicilina + ac. clavulánico 875/125 mg comp.x 14", "amoxicilina + ac. clavulánico 1g comp.x 14",
+            "cefalexina, 500 mg comp.x 16", "cefalexina, 1g comp.x 16",
+            "cefuroxima, 500 mg comp.x 10",
+            "ciprofloxacina, 500 mg comp.x 10", "ciprofloxacina, 500 mg comp.x 20",
+            "levofloxacina, 500 mg comp.x 7", "levofloxacina, 750 mg comp.x 5",
+            "azitromicina, 500 mg comp.x 3", "azitromicina, 500 mg comp.x 6",
+            "claritromicina, 500 mg comp.x 14",
+            "trimetoprima/sulfametoxazol, 160/800 mg comp.x 10",
+            "nitrofurantoína, 100 mg caps.x 40", "fosfomicina, 3g sobre x 1",
+            "metronidazol, 500 mg comp.x 20",
+            "fluconazol, 150 mg caps.x 2", "fluconazol, 150 mg caps.x 4",
+            "aciclovir, 400 mg comp.x 20", "aciclovir, 800 mg comp.x 20",
+            // RESPIRATORIO / ALERGIAS
+            "salbutamol, 100 mcg aerosol x 200 dosis",
+            "budesonide, 200 mcg aerosol x 100 dosis",
+            "fluticasona/salmeterol, 250/50 mcg aerosol x 120 dosis",
+            "budesonide/formoterol, 160/4.5 mcg aerosol x 120 dosis",
+            "montelukast, 10 mg comp.x 30",
+            "loratadina, 10 mg comp.x 10", "desloratadina, 5 mg comp.x 10",
+            "cetirizina, 10 mg comp.x 10", "levocetirizina, 5 mg comp.x 10",
+            "fexofenadina, 120 mg comp.x 10",
+            // GINECOLOGÍA / UROLOGÍA
+            "drospirenona/etinilestradiol, 3/0.03 mg comp.x 28", "drospirenona/etinilestradiol, 3/0.02 mg comp.x 28",
+            "dienogest/etinilestradiol, 2/0.03 mg comp.x 28",
+            "levonorgestrel, 1.5 mg comp.x 1",
+            "sildenafil, 50 mg comp.x 2", "sildenafil, 100 mg comp.x 2",
+            "tadalafilo, 5 mg comp.x 30", "tadalafilo, 20 mg comp.x 2",
+            "tamsulosina, 0.4 mg caps.lib.prol.x 30", "dutasteride, 0.5 mg caps.x 30"
         ];
 
         const dbDiagnosticos = [
-            "F41.9 - Trastorno de ansiedad, no especificado",
-            "F41.0 - Trastorno de pánico [ansiedad paroxística episódica]",
-            "F41.1 - Trastorno de ansiedad generalizada",
-            "F32.9 - Episodio depresivo, no especificado",
+            // PSIQUIATRÍA / SALUD MENTAL
+            "F41.0 - Trastorno de pánico [ansiedad paroxística episódica]", "F41.1 - Trastorno de ansiedad generalizada", "F41.2 - Trastorno mixto ansioso-depresivo", "F41.9 - Trastorno de ansiedad, no especificado",
+            "F32.0 - Episodio depresivo leve", "F32.1 - Episodio depresivo moderado", "F32.2 - Episodio depresivo grave sin síntomas psicóticos", "F32.9 - Episodio depresivo, no especificado",
             "F33.9 - Trastorno depresivo recurrente, no especificado",
             "F31.9 - Trastorno afectivo bipolar, no especificado",
             "F42.9 - Trastorno obsesivo-compulsivo, no especificado",
-            "F43.1 - Trastorno de estrés postraumático",
-            "F43.2 - Trastornos de adaptación",
-            "F20.9 - Esquizofrenia, no especificada",
+            "F43.1 - Trastorno de estrés postraumático", "F43.2 - Trastornos de adaptación",
+            "F20.0 - Esquizofrenia paranoide", "F20.9 - Esquizofrenia, no especificada",
             "F25.9 - Trastorno esquizoafectivo, no especificado",
             "F51.0 - Insomnio no orgánico",
             "F90.0 - Trastorno de la actividad y de la atención (TDAH)",
-            "G43.9 - Migraña, no especificada",
-            "Z00.0 - Examen médico general"
+            "F50.0 - Anorexia nerviosa", "F50.2 - Bulimia nerviosa",
+            "F10.2 - Síndrome de dependencia debida al uso de alcohol",
+            "F17.2 - Síndrome de dependencia debida al uso de tabaco",
+            // CLÍNICA MÉDICA Y CARDIOLOGÍA
+            "I10 - Hipertensión esencial (primaria)", "I11.9 - Enfermedad cardíaca hipertensiva sin insuficiencia cardíaca",
+            "I20.9 - Angina de pecho, no especificada", "I25.9 - Enfermedad isquémica crónica del corazón, no especificada",
+            "I50.9 - Insuficiencia cardíaca, no especificada",
+            "E78.0 - Hipercolesterolemia pura", "E78.2 - Hiperlipidemia mixta", "E78.5 - Hiperlipidemia, no especificada",
+            "I48 - Fibrilación y aleteo auricular",
+            "I83.9 - Venas varicosas de los miembros inferiores sin úlcera ni inflamación",
+            // ENDOCRINOLOGÍA
+            "E11.9 - Diabetes mellitus tipo 2 sin complicaciones", "E11.2 - Diabetes mellitus tipo 2 con complicaciones renales", "E11.4 - Diabetes mellitus tipo 2 con complicaciones neurológicas",
+            "E10.9 - Diabetes mellitus tipo 1 sin complicaciones",
+            "E03.9 - Hipotiroidismo, no especificado", "E05.9 - Tirotoxicosis, no especificada",
+            "E66.0 - Obesidad debida a exceso de calorías", "E66.9 - Obesidad, no especificada",
+            "E28.2 - Síndrome de ovario poliquístico",
+            // GASTROENTEROLOGÍA
+            "K21.0 - Enfermedad del reflujo gastroesofágico con esofagitis", "K21.9 - Enfermedad del reflujo gastroesofágico sin esofagitis",
+            "K29.7 - Gastritis, no especificada", "K25.9 - Úlcera gástrica, no especificada",
+            "K58.9 - Síndrome del intestino irritable sin diarrea", "K58.0 - Síndrome del intestino irritable con diarrea",
+            "K80.2 - Cálculo de la vesícula biliar sin colecistitis",
+            "K76.0 - Hígado graso, no clasificado en otra parte",
+            "K59.0 - Constipación", "K52.9 - Gastroenteritis y colitis no infecciosas, no especificadas",
+            // NEUROLOGÍA
+            "G43.9 - Migraña, no especificada", "G44.2 - Cefalea tensional",
+            "G40.9 - Epilepsia, tipo no especificado",
+            "G20 - Enfermedad de Parkinson",
+            "G30.9 - Enfermedad de Alzheimer, no especificada",
+            "G45.9 - Accidente isquémico transitorio, sin especificación",
+            "G56.0 - Síndrome del túnel carpiano",
+            // RESPIRATORIO
+            "J01.9 - Sinusitis aguda, no especificada", "J02.9 - Faringitis aguda, no especificada", "J03.9 - Amigdalitis aguda, no especificada",
+            "J20.9 - Bronquitis aguda, no especificada", "J40 - Bronquitis, no especificada como aguda o crónica",
+            "J44.9 - Enfermedad pulmonar obstructiva crónica, no especificada",
+            "J45.9 - Asma, no especificada",
+            "J30.4 - Rinitis alérgica, no especificada",
+            "J18.9 - Neumonía, organismo no especificado",
+            // TRAUMATOLOGÍA Y REUMATOLOGÍA
+            "M54.5 - Lumbago no especificado", "M54.4 - Lumbago con ciática", "M54.2 - Cervicalgia",
+            "M15.9 - Poliartrosis, no especificada", "M16.9 - Coxartrosis, no especificada", "M17.9 - Gonartrosis, no especificada",
+            "M79.1 - Mialgia", "M79.7 - Fibromialgia",
+            "M81.9 - Osteoporosis, no especificada",
+            "M05.9 - Artritis reumatoide seropositiva, no especificada",
+            "S93.4 - Esguince y torcedura del tobillo",
+            // GINECOLOGÍA Y UROLOGÍA
+            "N39.0 - Infección de vías urinarias, sitio no especificado",
+            "N40 - Hiperplasia de la próstata",
+            "N91.2 - Amenorrea, no especificada", "N92.0 - Menstruación excesiva y frecuente con ciclo regular",
+            "N95.1 - Estados menopáusicos y climatéricos femeninos",
+            "N76.0 - Vaginitis aguda", "B37.3 - Candidiasis de la vulva y de la vagina",
+            "N20.1 - Cálculo del uréter",
+            // OTROS / GENERAL
+            "Z00.0 - Examen médico general", "Z01.2 - Examen odontológico", "Z30.0 - Consejo y asesoramiento general sobre la anticoncepción",
+            "R50.9 - Fiebre, no especificada", "R51 - Cefalea", "R55 - Síncope y colapso",
+            "B35.1 - Tiña de las uñas (onicomicosis)", "L20.9 - Dermatitis atópica, no especificada"
         ];
 
         const dbPosologias = [
             "1 comp / 24 hs.", "1 comp / 12 hs.", "1 comp / 8 hs.",
             "1/2 comp / 24 hs.", "1/2 comp a la mañana, 1/2 comp a la noche.",
-            "1 comp por la noche antes de dormir.", "Según indicación médica.",
-            "Tomar con las comidas."
+            "1 comp por la noche antes de dormir.", 
+            "Tomar con el desayuno.", "Tomar lejos de las comidas.", "Tomar 30 minutos antes del desayuno.",
+            "Aplicar 1 puff cada 12 hs.", "Aplicar en la zona afectada cada 12 hs.",
+            "Según indicación médica.", "Tomar con abundante agua."
         ];
 
         let medicamentos = [];
@@ -185,7 +315,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const dataParam = urlParams.get('d');
 
-            // 1. SI ENTRA EL FARMACÉUTICO ESCANEANDO EL QR
             if(dataParam) {
                 document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:#0F4C81; margin-top:50px;'>Procesando validación... Aguarde.</h2>";
                 
@@ -193,7 +322,6 @@
                     const decodedStr = decodeURIComponent(escape(atob(dataParam)));
                     const d = JSON.parse(decodedStr);
                     
-                    // Reconstruimos la receta con la data comprimida
                     const fullData = {
                         paciente: d.p, dni: d.d, cuil: d.c, sexo: d.s, nacimiento: d.n,
                         os: d.o, afiliado: d.a, posologia: d.po, fecha: d.f, hora: '', recetarioNro: d.id,
@@ -207,7 +335,6 @@
                     document.getElementById('interfaz-principal').innerHTML = "<h2 style='text-align:center; color:red; margin-top:50px;'>❌ Error: Código QR inválido.</h2>";
                 }
             } else {
-                // 2. SI ENTRA EL MÉDICO PARA CREAR RECETA
                 const poblarDatalist = (id, array) => {
                     const list = document.getElementById(id);
                     array.forEach(item => { let opt = document.createElement('option'); opt.value = item; list.appendChild(opt); });
@@ -284,7 +411,6 @@
             JsBarcode("#bar-recetario-dup", data.recetarioNro, opcionesBarcode);
             JsBarcode("#bar-afiliado-dup", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
 
-            // ARMADO DEL QR ULTRALIVIANO
             const compactData = {
                 p: data.paciente, d: data.dni, c: data.cuil, s: data.sexo, n: data.nacimiento,
                 o: data.os, a: data.afiliado, po: data.posologia, f: data.fecha, id: data.recetarioNro,
@@ -295,7 +421,6 @@
             const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(compactData))));
             const linkEscaneo = window.location.href.split('?')[0] + "?d=" + encodedData;
             
-            // EL SECRETO: 400x400 para que se dibuje en HD y la cámara lo capte en 1 segundo
             new QRCode(document.getElementById("qr-orig"), { text: linkEscaneo, width: 400, height: 400, correctLevel: QRCode.CorrectLevel.L });
             new QRCode(document.getElementById("qr-dup"), { text: linkEscaneo, width: 400, height: 400, correctLevel: QRCode.CorrectLevel.L });
         }
