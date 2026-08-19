@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generador Oficial MRx - Clínicas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .ui-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 30px; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-row > div { flex: 1; min-width: 200px; }
+        label { display: block; font-size: 12px; font-weight: bold; color: #555; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .med-box { background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 20px; }
+        .btn { background: #000; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: #007bff; margin-top: 10px; width: 100%; }
+        .btn-generate { background: #28a745; font-size: 18px; width: 100%; padding: 15px; margin-top: 20px; }
+        #med-list { margin-top: 15px; font-size: 14px; }
+        .med-item { background: white; padding: 10px; border: 1px solid #eee; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .section-prof { background: #eef2f7; padding: 15px; border-radius: 6px; border-left: 4px solid #0F4C81; margin-bottom: 20px; }
+        
+        #print-area { display: none; }
+
+        /* ESTILOS EXACTOS PARA EL PDF */
+        @media print {
+            @page { size: A4; margin: 10mm 15mm; }
+            body { background: white; margin: 0; padding: 0; }
+            .ui-container { display: none; }
+            #print-area { display: block; width: 100%; color: #000; }
+            .page-break { page-break-before: always; }
+            
+            .text-center { text-align: center; }
+            p { margin: 2px 0; font-size: 11pt; }
+            
+            .pink-title { color: #FF007F; font-weight: bold; font-size: 12pt; text-align: center; margin-top: 5px; margin-bottom: 10px; }
+            .main-header { font-weight: bold; font-size: 12pt; margin-bottom: 15px; }
+            
+            .barcode-svg { height: 60px; margin-top: 5px; }
+            .barcode-sub { font-size: 13pt; margin-bottom: 15px; letter-spacing: 1px; }
+            
+            .patient-info { margin-top: 20px; margin-bottom: 20px; }
+            .patient-info p { font-size: 10pt; }
+            
+            .rp-title { font-weight: bold; font-size: 12pt; margin-bottom: 15px; }
+            .rp-list { margin: 0; padding-left: 20px; }
+            .rp-list li { margin-bottom: 15px; font-style: italic; }
+            .rp-details { margin-left: 0; font-style: normal; }
+            .rp-details p { font-size: 10.5pt; }
+            
+            .signature-block { margin-top: 30px; }
+            .signature-block p { font-size: 10pt; }
+            .italic-bold { font-style: italic; font-weight: bold; font-size: 11pt; margin-bottom: 5px;}
+            
+            .grey-text { color: #666; font-size: 9pt; text-align: center; }
+            .separator { border-bottom: 1px solid #000; margin: 10px 0; }
+            
+            .footer-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; }
+            .mrx-logo-container { width: 85px; height: 85px; flex-shrink: 0; margin-left: 10px; display: flex; align-items: center; justify-content: center; }
+            .mrx-logo-img { width: 100%; height: 100%; object-fit: contain; }
+            .qr-box { display: flex; align-items: center; gap: 15px; }
+            .small-footer { font-size: 8pt; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-container">
+        <h1 style="color:#0F4C81; text-align:center; margin-top:0;">Sistema de Recetas MRx</h1>
+        
+        <!-- DATOS DEL PROFESIONAL (CONFIGURABLE) -->
+        <div class="section-prof">
+            <h3 style="margin-top:0; color:#0F4C81;">1. Datos del Profesional Activo</h3>
+            <div class="form-row">
+                <div style="flex: 2;"><label>Nombre y Apellido</label><input type="text" id="med_nombre" value="BARBERA MIRET, FRANCISCO"></div>
+                <div><label>Especialidad</label><input type="text" id="med_esp" value="PSIQUIATRIA"></div>
+                <div><label>Profesión</label><input type="text" id="med_prof" value="Médico"></div>
+            </div>
+            <div class="form-row">
+                <div><label>Matrícula</label><input type="text" id="med_mat" value="MN 158282 (MINISTERIO DE SALUD CABA)"></div>
+                <div><label>REFEPS</label><input type="text" id="med_refeps" value="541033444821"></div>
+                <div><label>Dirección del Consultorio</label><input type="text" id="med_dir" value="No indicada"></div>
+            </div>
+        </div>
+
+        <h2>2. Datos del Paciente</h2>
+        <div class="form-row">
+            <div><label>Paciente</label><input type="text" id="paciente" placeholder="Ej: GONZALEZ, JUAN LUCAS"></div>
+            <div><label>D.N.I.</label><input type="text" id="dni"></div>
+            <div><label>CUIL</label><input type="text" id="cuil"></div>
+        </div>
+        <div class="form-row">
+            <div><label>Sexo</label><select id="sexo"><option>M</option><option>F</option><option>X</option></select></div>
+            <div><label>Nacimiento</label><input type="text" id="nacimiento" placeholder="DD/MM/AAAA"></div>
+            <div><label>Obra Social</label><input type="text" id="os" value="Paciente Particular"></div>
+            <div><label>Nro Afiliado</label><input type="text" id="afiliado"></div>
+        </div>
+
+        <h2>3. Prescripción (Autocompletado Activo)</h2>
+        <div class="med-box">
+            <div class="form-row">
+                <div style="flex: 2;">
+                    <label>Droga / Presentación</label>
+                    <input list="lista-meds" id="rx_nombre" placeholder="Buscar medicamento...">
+                    <datalist id="lista-meds"></datalist>
+                </div>
+                <div><label>Cantidad</label><input type="number" id="rx_cant" value="1"></div>
+                <div style="flex: 2;">
+                    <label>Diagnóstico CIE-10</label>
+                    <input list="lista-diag" id="rx_diag" placeholder="Buscar diagnóstico...">
+                    <datalist id="lista-diag"></datalist>
+                </div>
+            </div>
+            <button class="btn btn-add" onclick="agregarMed()">+ Añadir a la receta</button>
+            <div id="med-list"></div>
+        </div>
+
+        <div class="form-row">
+            <div style="flex: 1;">
+                <label>Posología / Notas</label>
+                <input list="lista-pos" id="posologia" placeholder="Ej: 1 comp / 24 hs">
+                <datalist id="lista-pos"></datalist>
+            </div>
+        </div>
+
+        <button class="btn btn-generate" onclick="prepararImpresion()">Generar PDF Oficial MRx</button>
+    </div>
+
+    <!-- CONTENEDOR INVISIBLE QUE CALCA EL DISEÑO -->
+    <div id="print-area"></div>
+
+    <script>
+        // --- BASES DE DATOS PRECARGADAS ---
+        
+        // 1. Medicamentos (Ejemplo de 100+ Psiquiátricos y Generales)
+        const dbMedicamentos = [
+            "escitalopram, 10 mg comp.rec.x 30", "escitalopram, 20 mg comp.rec.x 30",
+            "clonazepam, 0.5 mg comp.x 30", "clonazepam, 1 mg comp.x 60", "clonazepam, 2 mg comp.x 30",
+            "alprazolam, 0.5 mg comp.x 30", "alprazolam, 1 mg comp.x 30", "alprazolam, 2 mg comp.x 30",
+            "sertralina, 50 mg comp.x 30", "sertralina, 100 mg comp.x 30",
+            "fluoxetina, 20 mg caps.x 30", "paroxetina, 20 mg comp.x 30",
+            "venlafaxina, 75 mg caps.lib.prol.x 30", "venlafaxina, 150 mg caps.lib.prol.x 30",
+            "desvenlafaxina, 50 mg comp.x 30", "desvenlafaxina, 100 mg comp.x 30",
+            "duloxetina, 30 mg caps.x 30", "duloxetina, 60 mg caps.x 30",
+            "bupropion, 150 mg comp.lib.prol.x 30", "bupropion, 300 mg comp.lib.prol.x 30",
+            "mirtazapina, 15 mg comp.x 30", "mirtazapina, 30 mg comp.x 30",
+            "quetiapina, 25 mg comp.x 30", "quetiapina, 100 mg comp.x 30", "quetiapina, 200 mg comp.x 30",
+            "risperidona, 1 mg comp.x 30", "risperidona, 2 mg comp.x 30", "risperidona, 3 mg comp.x 30",
+            "olanzapina, 5 mg comp.x 30", "olanzapina, 10 mg comp.x 30",
+            "aripiprazol, 5 mg comp.x 30", "aripiprazol, 10 mg comp.x 30", "aripiprazol, 15 mg comp.x 30",
+            "haloperidol, 1 mg comp.x 30", "haloperidol, 5 mg comp.x 30",
+            "litio carbonato, 300 mg comp.x 50",
+            "ácido valproico, 250 mg caps.x 50", "ácido valproico, 500 mg comp.lib.prol.x 50",
+            "lamotrigina, 25 mg comp.x 30", "lamotrigina, 50 mg comp.x 30", "lamotrigina, 100 mg comp.x 30",
+            "topiramato, 25 mg comp.x 28", "topiramato, 50 mg comp.x 28", "topiramato, 100 mg comp.x 28",
+            "pregabalina, 75 mg caps.x 30", "pregabalina, 150 mg caps.x 30",
+            "gabapentina, 300 mg caps.x 30",
+            "zolpidem, 10 mg comp.x 30", "zopiclona, 7.5 mg comp.x 30",
+            "lorazepam, 1 mg comp.x 30", "lorazepam, 2.5 mg comp.x 30",
+            "diazepam, 5 mg comp.x 30", "diazepam, 10 mg comp.x 30",
+            "metilfenidato, 10 mg comp.x 30", "metilfenidato, 20 mg comp.x 30",
+            "amoxicilina, 500 mg comp.x 21", "amoxicilina + ac. clavulanico 875/125 mg comp.x 14",
+            "ibuprofeno, 400 mg comp.x 20", "ibuprofeno, 600 mg comp.x 20",
+            "paracetamol, 500 mg comp.x 20", "paracetamol, 1g comp.x 20"
+        ];
+
+        // 2. Diagnósticos CIE-10 (Psiquiatría y Generales)
+        const dbDiagnosticos = [
+            "F41.9 - Trastorno de ansiedad, no especificado",
+            "F41.0 - Trastorno de pánico [ansiedad paroxística episódica]",
+            "F41.1 - Trastorno de ansiedad generalizada",
+            "F32.9 - Episodio depresivo, no especificado",
+            "F33.9 - Trastorno depresivo recurrente, no especificado",
+            "F31.9 - Trastorno afectivo bipolar, no especificado",
+            "F42.9 - Trastorno obsesivo-compulsivo, no especificado",
+            "F43.1 - Trastorno de estrés postraumático",
+            "F43.2 - Trastornos de adaptación",
+            "F20.9 - Esquizofrenia, no especificada",
+            "F25.9 - Trastorno esquizoafectivo, no especificado",
+            "F51.0 - Insomnio no orgánico",
+            "F90.0 - Trastorno de la actividad y de la atención (TDAH)",
+            "G43.9 - Migraña, no especificada",
+            "Z00.0 - Examen médico general"
+        ];
+
+        // 3. Posologías
+        const dbPosologias = [
+            "1 comp / 24 hs.", "1 comp / 12 hs.", "1 comp / 8 hs.",
+            "1/2 comp / 24 hs.", "1/2 comp a la mañana, 1/2 comp a la noche.",
+            "1 comp por la noche antes de dormir.", "Según indicación médica.",
+            "Tomar con las comidas."
+        ];
+
+        // --- INICIALIZACIÓN ---
+        window.onload = function() {
+            const poblarDatalist = (id, array) => {
+                const list = document.getElementById(id);
+                array.forEach(item => {
+                    let opt = document.createElement('option');
+                    opt.value = item;
+                    list.appendChild(opt);
+                });
+            };
+            poblarDatalist("lista-meds", dbMedicamentos);
+            poblarDatalist("lista-diag", dbDiagnosticos);
+            poblarDatalist("lista-pos", dbPosologias);
+        };
+
+        let medicamentos = [];
+
+        function agregarMed() {
+            const nombre = document.getElementById('rx_nombre').value;
+            const cant = document.getElementById('rx_cant').value;
+            const diag = document.getElementById('rx_diag').value;
+            if(!nombre) return alert("Ingresá un medicamento");
+            
+            medicamentos.push({ nombre, cant, diag });
+            document.getElementById('rx_nombre').value = '';
+            document.getElementById('rx_diag').value = '';
+            renderMeds();
+        }
+
+        function renderMeds() {
+            const caja = document.getElementById('med-list');
+            caja.innerHTML = medicamentos.map((m, i) => `
+                <div class="med-item">
+                    <span><b>${m.nombre}</b> (Cant: ${m.cant})</span>
+                    <button onclick="borrarMed(${i})" style="color:red;border:none;background:none;cursor:pointer;">X</button>
+                </div>
+            `).join('');
+        }
+
+        function borrarMed(index) {
+            medicamentos.splice(index, 1);
+            renderMeds();
+        }
+
+        function prepararImpresion() {
+            if(medicamentos.length === 0) return alert("Agregá al menos un medicamento a la lista.");
+
+            // Recopilamos todos los datos (Paciente + Médico)
+            const data = {
+                paciente: document.getElementById('paciente').value || "No indicado",
+                dni: document.getElementById('dni').value || "-",
+                cuil: document.getElementById('cuil').value || "-",
+                sexo: document.getElementById('sexo').value,
+                nacimiento: document.getElementById('nacimiento').value || "-",
+                os: document.getElementById('os').value || "Paciente Particular",
+                afiliado: document.getElementById('afiliado').value || "-",
+                posologia: document.getElementById('posologia').value || "Según indicación.",
+                fecha: new Date().toLocaleDateString('es-AR'),
+                hora: new Date().toLocaleTimeString('es-AR', {hour: '2-digit', minute:'2-digit'}),
+                recetarioNro: Math.floor(Math.random() * 10000000000000).toString(), 
+                
+                // Datos del Profesional
+                med_nombre: document.getElementById('med_nombre').value,
+                med_esp: document.getElementById('med_esp').value,
+                med_prof: document.getElementById('med_prof').value,
+                med_mat: document.getElementById('med_mat').value,
+                med_refeps: document.getElementById('med_refeps').value,
+                med_dir: document.getElementById('med_dir').value
+            };
+
+            const htmlOriginal = generarPaginaHTML(data, false);
+            const htmlDuplicado = generarPaginaHTML(data, true);
+
+            document.getElementById('print-area').innerHTML = htmlOriginal + '<div class="page-break"></div>' + htmlDuplicado;
+
+            // Códigos de Barras
+            const opcionesBarcode = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2.5 };
+            JsBarcode("#bar-recetario-orig", data.recetarioNro, opcionesBarcode);
+            JsBarcode("#bar-afiliado-orig", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
+            JsBarcode("#bar-recetario-dup", data.recetarioNro, opcionesBarcode);
+            JsBarcode("#bar-afiliado-dup", data.afiliado !== "-" ? data.afiliado : data.dni, opcionesBarcode);
+
+            // Códigos QR
+            const linkSimulado = "https://validar-receta.gob.ar/v/" + data.recetarioNro;
+            new QRCode(document.getElementById("qr-orig"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
+            new QRCode(document.getElementById("qr-dup"), { text: linkSimulado, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.L });
+
+            setTimeout(() => { window.print(); }, 500);
+        }
+
+        function generarPaginaHTML(data, esDuplicado) {
+            const sufijo = esDuplicado ? 'dup' : 'orig';
+            const medsHTML = medicamentos.map(m => `
+                <li>${m.nombre}
+                    <div class="rp-details">
+                        <p><strong>Cantidad:</strong> ${m.cant}</p>
+                        ${m.diag ? `<p><strong>Diagnóstico:</strong> ${m.diag}</p>` : ''}
+                    </div>
+                </li>
+            `).join('');
+
+            return `
+                ${esDuplicado ? '<div class="pink-title">Duplicado</div>' : ''}
+                
+                <div class="text-center">
+                    <p class="main-header">Fecha Receta: ${data.fecha}</p>
+                    
+                    <p style="font-weight: bold; margin-bottom: 5px;">Recetario:</p>
+                    <svg id="bar-recetario-${sufijo}" class="barcode-svg"></svg>
+                    <p class="barcode-sub">${data.recetarioNro}</p>
+                    
+                    <p style="font-weight: bold; margin-bottom: 5px; margin-top: 10px;">Nro Afiliado:</p>
+                    <svg id="bar-afiliado-${sufijo}" class="barcode-svg"></svg>
+                    <p class="barcode-sub">${data.afiliado !== "-" ? data.afiliado : data.dni}</p>
+                </div>
+
+                <div class="patient-info">
+                    <p><strong>OS:</strong> ${data.os}</p>
+                    <p><strong>Afiliado:</strong> ${data.paciente}</p>
+                    <p><strong>D.N.I.:</strong> ${data.dni}</p>
+                    <p><strong>CUIL:</strong> ${data.cuil}</p>
+                    <p><strong>Sexo:</strong> ${data.sexo}</p>
+                    <p><strong>Fecha Nacimiento:</strong> ${data.nacimiento}</p>
+                </div>
+
+                <p class="rp-title">RP/</p>
+                <ul class="rp-list">
+                    ${medsHTML}
+                </ul>
+
+                <div class="signature-block">
+                    <p class="italic-bold">Firmado electrónicamente por:</p>
+                    <p><strong>Dr/a:</strong> ${data.med_nombre}</p>
+                    <p><strong>REFEPS:</strong> ${data.med_refeps}</p>
+                    <p><strong>Matricula:</strong> ${data.med_mat}</p>
+                    <p><strong>Profesión:</strong> ${data.med_prof}</p>
+                    <p><strong>Especialidad:</strong> ${data.med_esp}</p>
+                    <p><strong>Dirección:</strong> ${data.med_dir}</p>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <p><strong>Posología / Notas:</strong></p>
+                    <p>${data.posologia}</p>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <p class="grey-text">Emitida: ${data.fecha} ${data.hora}</p>
+                    <p class="grey-text">Esta receta debe validarse on-line ingresando el número de recetario o autorización</p>
+                </div>
+
+                <div class="separator"></div>
+
+                <div class="footer-flex">
+                    <!-- LLAMADA A LA IMAGEN REAL (mrx_digital.png) -->
+                    <div class="mrx-logo-container">
+                        <img src="mrx_digital.png" class="mrx-logo-img" alt="Logo MRx">
+                    </div>
+
+                    <div class="qr-box">
+                        <span style="font-size: 11pt;">Firma Electrónica:</span>
+                        <div id="qr-${sufijo}"></div>
+                    </div>
+                </div>
+
+                <p class="grey-text" style="margin-top: 10px;">La firma electrónica sustituye legalmente a la firma ológrafa</p>
+
+                <div class="separator"></div>
+
+                <p class="small-footer">Buscador Nacional de Medicamentos:<br><a href="#" style="color:blue; text-decoration:underline;">https://www.argentina.gob.ar/buscador-de-precios-de-medicamentos</a></p>
+                <p class="small-footer" style="margin-top: 10px;">Esta receta fue creada por un emisor inscripto y validado en el Registro de Recetarios Electrónicos del<br>Ministerio de Salud de la Nación (Resolución RL-2024-91317760-APN-SSVEIYES#MS)</p>
+            `;
+        }
+    </script>
+</body>
+</html>
